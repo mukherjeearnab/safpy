@@ -7,7 +7,7 @@ from compiler.solc_selector import SolcSelector
 from compiler.output_generator import CompiledOutputGenerator
 
 
-class SolcCompiler(object):
+class SolCompiler(object):
 
     def __init__(self, source_code: str):
         self.source_code = source_code

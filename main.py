@@ -1,5 +1,5 @@
 import json
-from compiler import SolcCompiler
+from compiler import SolCompiler
 
 source = '''
 pragma solidity >0.4.99 <0.6.0;
@@ -15,11 +15,10 @@ pragma solidity >0.4.99 <0.6.0;
   }
 '''
 
-compiler = SolcCompiler(source)
+compiler = SolCompiler(source)
 output = compiler.compile()
 contracts = output.get_contracts_list()
 print(contracts)
 ast = output.get_ast(contracts[1])
-print(ast)
-with open('ast.json', 'w', encoding='utf8') as f:
+with open('./gen/ast.json', 'w', encoding='utf8') as f:
     json.dump(ast, f, indent=4)

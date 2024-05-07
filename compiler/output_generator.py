@@ -3,6 +3,7 @@ sdfsd
 '''
 import solcx
 from copy import deepcopy
+from typing import List
 
 
 class CompiledOutputGenerator(object):
@@ -13,35 +14,42 @@ class CompiledOutputGenerator(object):
 
     def __init__(self, source_code):
         self.__init_helper(source_code)
-        """
-        Solidity Compiler Version Need to set and cal
-        After Deploy:::: => GET Call Mapping
-        """
+        '''
+        Constructor to compile the source code and create a compiler object
+        '''
 
     def __init_helper(self, source_code):
         self.__source_code = source_code
+
+        # compile the source code
         self.__compiled_result = solcx.compile_source(self.__source_code)
+
+        # get the list of contracts present in the source code
         self.__contracts_list = self.__extract_modify_compiled_output()
 
     def get_ast(self, contract_name: str) -> dict:
+        '''
+        Get the AST of the contract.\\
+        Apparently, it returns the complete AST of the Source File.
+        '''
         return deepcopy(self.__compiled_result.get(contract_name)['ast'])
 
-    def get_source_code(self):
+    def get_source_code(self) -> str:
         return self.__source_code
 
-    def get_contracts_list(self):
+    def get_contracts_list(self) -> List[str]:
         return self.__contracts_list
 
-    def get_byte_code(self):
+    def get_byte_code(self) -> str:
         return self.__get_option_output(1)
 
-    def get_opcodes(self):
+    def get_opcodes(self) -> str:
         return self.__get_option_output(2)
 
-    def get_abi(self):
+    def get_abi(self) -> str:
         return self.__get_option_output(0)
 
-    def get_source_mapping(self):
+    def get_source_mapping(self) -> str:
         return self.__map_to_source()
 
     def reinitialize_helper(self, source_code):
