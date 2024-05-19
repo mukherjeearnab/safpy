@@ -13,7 +13,7 @@ class SourceUnit(Node):
     Source Unit Node
     '''
 
-    def __init__(self, ast_node: Union[dict, str],
+    def __init__(self, ast_node: dict,
                  entry_node_id: str, prev_node_id: str,
                  join_node_id: str, exit_node_id: str,
                  cfg_metadata: CFGMetadata):
@@ -45,9 +45,9 @@ class SourceUnit(Node):
             childConstructor = getattr(nodes, child_node_type)
 
             # initialize the child node (recursive)
-            child_node = childConstructor(self.entry_node, self.cfg_id,
+            child_node = childConstructor(child, self.entry_node, self.cfg_id,
                                           self.join_node, self.exit_node,
                                           cfg_metadata)
 
             # add the child node's ID to the next_nodes list
-            self.next_nodes.append(child_node.cfg_id)
+            self.next_nodes.add(child_node.cfg_id)

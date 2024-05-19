@@ -13,7 +13,7 @@ class ContractDefinition(Node):
     Contract Definition Node
     '''
 
-    def __init__(self, ast_node: Union[dict, str],
+    def __init__(self, ast_node: dict,
                  entry_node_id: str, prev_node_id: str,
                  join_node_id: str, exit_node_id: str,
                  cfg_metadata: CFGMetadata):
@@ -41,7 +41,7 @@ class ContractDefinition(Node):
         self.fullyImplemented = ast_node.get('fullyImplemented', None)
         self.linearizedBaseContracts = ast_node.get(
             'linearizedBaseContracts', list())
-        self.contractName = ast_node.get('name', None)
+        self.name = ast_node.get('name', None)
         self.scope = ast_node.get('scope', None)
 
         # traverse the children and construct the rest of the CFG recursively
@@ -53,9 +53,9 @@ class ContractDefinition(Node):
             childConstructor = getattr(nodes, child_node_type)
 
             # initialize the child node (recursive)
-            child_node = childConstructor(self.entry_node, self.cfg_id,
+            child_node = childConstructor(child, self.entry_node, self.cfg_id,
                                           self.join_node, self.exit_node,
                                           cfg_metadata)
 
             # add the child node's ID to the next_nodes list
-            self.next_nodes.append(child_node.cfg_id)
+            self.next_nodes.add(child_node.cfg_id)

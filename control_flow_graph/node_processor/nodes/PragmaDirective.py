@@ -14,7 +14,7 @@ class PragmaDirective(Node):
     PragmaDirective Node
     '''
 
-    def __init__(self, ast_node: Union[dict, str],
+    def __init__(self, ast_node: dict,
                  entry_node_id: str, prev_node_id: str,
                  join_node_id: str, exit_node_id: str,
                  cfg_metadata: CFGMetadata):
@@ -38,4 +38,4 @@ class PragmaDirective(Node):
         self.literals = ast_node.get('literals', list())
 
         # add the exit node to the next node and end it
-        self.next_nodes.append(exit_node_id)
+        self.next_nodes.add(exit_node_id)
