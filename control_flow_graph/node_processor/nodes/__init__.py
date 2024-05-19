@@ -7,6 +7,15 @@ Provides the class definition of different CFG (AST) nodes
 from typing import Union
 from enum import Enum
 
+# AST Node Types
+from control_flow_graph.node_processor.nodes.ContractDefinition import ContractDefinition
+from control_flow_graph.node_processor.nodes.ExpressionStatement import ExpressionStatement
+from control_flow_graph.node_processor.nodes.FunctionDefinition import FunctionDefinition
+from control_flow_graph.node_processor.nodes.IfStatement import IfStatement
+from control_flow_graph.node_processor.nodes.PragmaDirective import PragmaDirective
+from control_flow_graph.node_processor.nodes.SourceUnit import SourceUnit
+from control_flow_graph.node_processor.nodes.VariableDeclaration import VariableDeclaration
+
 
 class ExtraNodes(Enum):
     CN_F = 'ForLoop_Condition'
@@ -24,21 +33,6 @@ class ExtraNodes(Enum):
 
     EX_FN = 'FunctionBody_Exit'
     EX_SOURCE = 'SourceUnit_Exit'
-
-
-class BasicBlockTypes(Enum):
-    Entry = 'Entry_Block'
-    Exit = 'Exit_Block'
-
-    Statement = 'Statement_Block'
-    FunctionBody = 'FunctionBody_Block'
-    ClassBody = 'ClassBody_Block'
-
-    Conditional = 'Conditional_Block'
-    Loop = 'LoopBlock'
-    Branch = 'Branch_Block'
-
-    FunctionCall = 'FunctionCall_Block'
 
 
 class Node(object):
