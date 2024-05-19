@@ -1,9 +1,9 @@
 '''
-Class definition for the Pragma Directive CFG (AST) node
+Class definition for the Source Unit CFG (AST) node
 '''
 from typing import Union
 from control_flow_graph.node_processor import CFGMetadata
-from control_flow_graph.node_processor.nodes import BasicBlockTypes
+from control_flow_graph.node_processor import BasicBlockTypes
 from control_flow_graph.node_processor.nodes import Node
 import control_flow_graph.node_processor.nodes as nodes
 
@@ -20,30 +20,34 @@ class SourceUnit(Node):
         '''
         Constructor
         '''
+        super(SourceUnit, self).__init__(ast_node, entry_node_id, prev_node_id,
+                                         join_node_id, exit_node_id,
+                                         cfg_metadata)
 
+        # set the basic block type and node type
         self.basic_block_type = BasicBlockTypes.EntryBlock
         self.node_type = 'SourceUnit'
 
+        # register the node to the CFG Metadata store and
+        # obtain a CFG ID of the form f'{node_type}_{n}'
         self.cfg_id = cfg_metadata.register_node(self, self.node_type)
 
-        self.entry_node = entry_node_id
-        self.exit_node = exit_node_id
+        # node specific metadata
+        # exported symbols from the source unit
+        self.exported_symbols = ast_node.get('exportedSymbols', dict())
 
-        self.next_nodes = []
-        self.previous_nodes = [prev_node_id]
-
-        self.join_node = join_node_id
-
-        self.src_map = (int(i) for i in ast_node['src'].split(':'))
-        self.ast_id = ast_node['id']
-        self.children = ast_node['nodes']
-
+        # traverse the children and construct the rest of the CFG recursively
         for child in self.children:
+            # obtain the child node's type
             child_node_type = child['nodeType']
 
+            # obtain the child node's constructor
             childConstructor = getattr(nodes, child_node_type)
+
+            # initialize the child node (recursive)
             child_node = childConstructor(self.entry_node, self.cfg_id,
                                           self.join_node, self.exit_node,
                                           cfg_metadata)
 
+            # add the child node's ID to the next_nodes list
             self.next_nodes.append(child_node.cfg_id)
