@@ -33,4 +33,4 @@ with open('./gen/ast.json', 'w', encoding='utf8') as f:
 
 cfg = ControlFlowGraph(source, ast)
 cfg.build_cfg()
-# cfg.generate_dot()
+cfg.generate_dot()

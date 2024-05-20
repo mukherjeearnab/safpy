@@ -62,7 +62,7 @@ class FunctionDefinition(Node):
         # perform logic to create the body of the function
         body_statements = ast_node['body']['statements']
         body_prev_statement = function_entry.cfg_id
-        for statement in body_statements:
+        for i, statement in enumerate(body_statements):
             # obtain the child node's type
             child_node_type = statement['nodeType']
 
@@ -77,8 +77,20 @@ class FunctionDefinition(Node):
             # add the child node's ID to the next_nodes list
             body_prev_statement = child_node.cfg_id
 
+            # obtain the cfg_id for the next node for function block
+            if i == 0:
+                function_entry.add_next_node(child_node.cfg_id)
+
+            self.leaves.update(child_node.get_leaf_nodes())
+
+        last_stmt_node = self.leaves.pop()
+
         # set the previous node of the exit node as the last statement of the body
-        function_exit.add_prev_node(body_prev_statement)
+        function_exit.add_prev_node(last_stmt_node)
+
+        # also add the next node of last child as the exit node
+        cfg_metadata.get_node(
+            last_stmt_node).add_next_node(function_exit.cfg_id)
 
         self.leaves.add(function_exit.cfg_id)
 

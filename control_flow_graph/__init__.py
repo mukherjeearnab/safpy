@@ -56,9 +56,11 @@ class ControlFlowGraph(object):
 
         leaves = child_node.get_leaf_nodes()
 
+        print('ALL-LEAVES', leaves)
+
         for leaf in leaves:
             node = self.cfg_metadata.get_node(leaf)
-            node.add_prev_node(self.exit_node.cfg_id)
+            node.add_next_node(self.exit_node.cfg_id)
 
             self.exit_node.add_prev_node(leaf)
 
@@ -66,7 +68,7 @@ class ControlFlowGraph(object):
         '''
         Traverse the CFG and generate a Graphviz Digraph DOT file
         '''
-        graph = Digraph(comment='Abstract Syntax Tree')
+        graph = Digraph(comment='Control Flow Graph')
         visited = set()
 
         def traverse(node_id, graph: Digraph, visited: set, cfg_metadata: CFGMetadata):
@@ -85,21 +87,19 @@ class ControlFlowGraph(object):
 
             print(node_id)
 
-            graph.node(node_id, label=node.node_type)
+            graph.node(node_id, label=node_id)
 
             print(
                 getattr(node, 'next_nodes', None),
                 getattr(node, 'previous_nodes', None))
 
-            for child in node.next_nodes:
-                child_node = cfg_metadata.get_node(child)
+            for child_id in node.next_nodes:
+                child_node = cfg_metadata.get_node(child_id)
 
                 traverse(child_node.cfg_id, graph, visited, cfg_metadata)
 
-                graph.edge(node_id, child)
-
-            if len(node.next_nodes) == 0:
-                graph.edge(node_id, 'ExtraNodes.EX_SOURCE_0')
+                graph.edge(node_id, child_id,
+                           label=node.next_nodes[child_id]['label'])
 
         traverse(self.entry_node.cfg_id, graph, visited, self.cfg_metadata)
 
