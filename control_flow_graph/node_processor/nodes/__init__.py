@@ -4,7 +4,6 @@ The Nodes Module
 Provides the class definition of different CFG (AST) nodes
 '''
 
-from control_flow_graph.helpers import CFGMetadata, Node, BasicBlockTypes, ExtraNodes
 
 # AST Node Types
 from control_flow_graph.node_processor.nodes.ContractDefinition import ContractDefinition

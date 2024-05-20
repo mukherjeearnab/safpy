@@ -2,9 +2,9 @@
 Class definition for the Source Unit CFG (AST) node
 '''
 from graphviz import Digraph
-from control_flow_graph.helpers import CFGMetadata
-from control_flow_graph.node_processor.nodes import BasicBlockTypes
-from control_flow_graph.node_processor.nodes import Node
+from control_flow_graph.node_processor import CFGMetadata
+from control_flow_graph.node_processor import BasicBlockTypes
+from control_flow_graph.node_processor import Node
 import control_flow_graph.node_processor.nodes as nodes
 
 
@@ -15,14 +15,12 @@ class SourceUnit(Node):
 
     def __init__(self, ast_node: dict,
                  entry_node_id: str, prev_node_id: str,
-                 join_node_id: str, exit_node_id: str,
-                 cfg_metadata: CFGMetadata, graph: Digraph):
+                 exit_node_id: str, cfg_metadata: CFGMetadata):
         '''
         Constructor
         '''
         super(SourceUnit, self).__init__(ast_node, entry_node_id, prev_node_id,
-                                         join_node_id, exit_node_id,
-                                         cfg_metadata, graph)
+                                         exit_node_id, cfg_metadata)
 
         # set the basic block type and node type
         self.basic_block_type = BasicBlockTypes.Entry
@@ -30,14 +28,9 @@ class SourceUnit(Node):
 
         # register the node to the CFG Metadata store and
         # obtain a CFG ID of the form f'{node_type}_{n}'
-        self.cfg_id = cfg_metadata.register_node(self, self.node_type)
+        self.cfg_id = self.cfg_metadata.register_node(self, self.node_type)
 
         print(f'Processing CFG Node {self.cfg_id}')
-
-        # allocate this node to the graph and
-        # add an edge from the previous node to this one
-        graph.node(self.cfg_id, label=self.cfg_id)
-        graph.edge(prev_node_id, self.cfg_id)
 
         # node specific metadata
         # exported symbols from the source unit
@@ -53,8 +46,25 @@ class SourceUnit(Node):
 
             # initialize the child node (recursive)
             child_node = childConstructor(child, self.entry_node, self.cfg_id,
-                                          self.join_node, self.exit_node,
-                                          cfg_metadata, graph)
+                                          self.exit_node, self.cfg_metadata)
 
             # add the child node's ID to the next_nodes list
-            self.next_nodes.add(child_node.cfg_id)
+            self.add_next_node(child_node.cfg_id)
+
+            # obtain the leaf nodes from the child nodes
+            self.leaves.update(child_node.get_leaf_nodes())
+
+    def get_leaf_nodes(self) -> set:
+        '''
+        Returns the leaf node(a) in the current branch,
+        where the current node is the root node 
+        '''
+
+        # recursively traverse all the nodes till we hit the leaf nodes
+        for node_id in self.next_nodes.keys():
+            node = self.cfg_metadata.get_node(node_id)
+            _leaves = node.get_leaf_nodes()
+
+            self.leaves.update(_leaves)
+
+        return self.leaves

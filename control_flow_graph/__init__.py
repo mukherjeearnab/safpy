@@ -1,8 +1,10 @@
 from graphviz import Digraph
 
-from control_flow_graph.helpers import CFGMetadata
+from control_flow_graph.node_processor import CFGMetadata
 import control_flow_graph.node_processor.nodes as nodes
-from control_flow_graph.node_processor.nodes import Node, ExtraNodes
+from control_flow_graph.node_processor import Node, ExtraNodes
+from control_flow_graph.node_processor.nodes.extra_nodes.SourceEntry import SourceEntry
+from control_flow_graph.node_processor.nodes.extra_nodes.SourceExit import SourceExit
 
 
 class ControlFlowGraph(object):
@@ -23,13 +25,11 @@ class ControlFlowGraph(object):
         self.cfg_metadata = CFGMetadata()
 
         # generate the entry and exit nodes
-        self.entry_node = Node(dict(), None, None,
-                               None, None,
-                               self.cfg_metadata, self.graph, extra_node=ExtraNodes.EN_SOURCE)
+        self.entry_node = SourceEntry(dict(), None, None,
+                                      None, self.cfg_metadata)
 
-        self.exit_node = Node(dict(), None, None,
-                              None, None,
-                              self.cfg_metadata, self.graph, extra_node=ExtraNodes.EX_SOURCE)
+        self.exit_node = SourceExit(dict(), None, None,
+                                    None, self.cfg_metadata)
 
         # link the entry and exit nodes
         self.entry_node.set_entry_node(self.entry_node.cfg_id)
@@ -41,7 +41,6 @@ class ControlFlowGraph(object):
         '''
         Build the CFG recursively
         '''
-
         # obtain the AST's first node's type
         node_type = self.ast['nodeType']
 
@@ -50,13 +49,18 @@ class ControlFlowGraph(object):
 
         # initialize the child node (recursive)
         child_node = nodeConstructor(self.ast, self.entry_node.cfg_id, self.entry_node.cfg_id,
-                                     None, self.exit_node.cfg_id,
-                                     self.cfg_metadata, self.graph)
+                                     self.exit_node.cfg_id, self.cfg_metadata)
 
         # add the ast's first node's ID to the next_nodes list of the entry node
-        self.entry_node.next_nodes.add(child_node.cfg_id)
+        self.entry_node.add_next_node(child_node.cfg_id)
 
-        self.graph.render(filename='./gen/cfg.png')
+        leaves = child_node.get_leaf_nodes()
+
+        for leaf in leaves:
+            node = self.cfg_metadata.get_node(leaf)
+            node.add_prev_node(self.exit_node.cfg_id)
+
+            self.exit_node.add_prev_node(leaf)
 
     def generate_dot(self) -> str:
         '''

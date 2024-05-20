@@ -2,9 +2,9 @@
 Class definition for the Pragma Directive CFG (AST) node
 '''
 from graphviz import Digraph
-from control_flow_graph.helpers import CFGMetadata
-from control_flow_graph.node_processor.nodes import BasicBlockTypes
-from control_flow_graph.node_processor.nodes import Node
+from control_flow_graph.node_processor import CFGMetadata
+from control_flow_graph.node_processor import BasicBlockTypes
+from control_flow_graph.node_processor import Node
 
 
 class PragmaDirective(Node):
@@ -14,14 +14,12 @@ class PragmaDirective(Node):
 
     def __init__(self, ast_node: dict,
                  entry_node_id: str, prev_node_id: str,
-                 join_node_id: str, exit_node_id: str,
-                 cfg_metadata: CFGMetadata, graph: Digraph):
+                 exit_node_id: str, cfg_metadata: CFGMetadata):
         '''
         Constructor
         '''
         super(PragmaDirective, self).__init__(ast_node, entry_node_id, prev_node_id,
-                                              join_node_id, exit_node_id,
-                                              cfg_metadata, graph)
+                                              exit_node_id, cfg_metadata)
 
         # set the basic block type and node type
         self.basic_block_type = BasicBlockTypes.Statement
@@ -33,17 +31,20 @@ class PragmaDirective(Node):
 
         print(f'Processing CFG Node {self.cfg_id}')
 
-        # allocate this node to the graph and
-        # add an edge from the previous node to this one
-        graph.node(self.cfg_id, label=self.cfg_id)
-        graph.edge(prev_node_id, self.cfg_id)
-
         # node specific metadata
         # obtain the literals of the pragma directive
         self.literals = ast_node.get('literals', list())
 
         # add the exit node to the next node and end it
-        self.next_nodes.add(exit_node_id)
+        self.add_next_node(exit_node_id)
 
-        # also add the link to the source exit node
-        graph.edge(self.cfg_id, exit_node_id)
+        # add this node as a leaf node
+        self.leaves.add(self.cfg_id)
+
+    def get_leaf_nodes(self) -> set:
+        '''
+        Returns the leaf node(a) in the current branch,
+        where the current node is the root node 
+        '''
+
+        return self.leaves
