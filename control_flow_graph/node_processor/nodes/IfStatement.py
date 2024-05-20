@@ -65,12 +65,10 @@ class IfStatement(Node):
                 self.add_next_node(child_node.cfg_id, label='True')
                 self.true_body_next = child_node.cfg_id
 
+            self.leaves.update(child_node.get_leaf_nodes())
+
         # add the join node's previous node as the last child of the block
         join_node.add_prev_node(body_prev_statement)
-
-        # also add the next node of last child as the join node
-        cfg_metadata.get_node(
-            body_prev_statement).add_next_node(self.join_node)
 
         #######################
         # False Body Processing
@@ -97,12 +95,18 @@ class IfStatement(Node):
                 self.add_next_node(child_node.cfg_id, label='False')
                 self.false_body_next = child_node.cfg_id
 
-        # add the join node's previous node as the last child of the block
-        join_node.add_prev_node(body_prev_statement)
+                self.leaves.update(child_node.get_leaf_nodes())
 
-        # also add the next node of last child as the join node
-        cfg_metadata.get_node(
-            body_prev_statement).add_next_node(self.join_node)
+        while len(self.leaves) != 0:
+            print("IFLEAF", self.leaves)
+            last_stmt_node = self.leaves.pop()
+
+            # add the join node's previous node as the last child of the block
+            join_node.add_prev_node(body_prev_statement)
+
+            # also add the next node of last child as the exit node
+            cfg_metadata.get_node(
+                last_stmt_node).add_next_node(self.join_node)
 
         # finally add the join node as the leaf
         self.leaves.add(self.join_node)

@@ -10,7 +10,8 @@ contract c {
 
     function run() {
         if (a == 10) {
-        b += 1;
+        if (a % 2 == 0) {b += 1;}
+        else {b += a + 1;}
         } else {
             b -= 1;
         }

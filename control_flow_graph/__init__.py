@@ -91,7 +91,7 @@ class ControlFlowGraph(object):
 
             print(
                 getattr(node, 'next_nodes', None),
-                getattr(node, 'previous_nodes', None))
+                getattr(node, 'prev_nodes', None))
 
             for child_id in node.next_nodes:
                 child_node = cfg_metadata.get_node(child_id)
