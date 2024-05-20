@@ -1,44 +1,7 @@
 from enum import Enum
 from typing import Union
 from collections import defaultdict
-
-
-class CFGMetadata(object):
-    '''
-    Metadata Container Class Definition
-    '''
-
-    def __init__(self):
-        # this contains the mapping of Node ID to node object
-        self.node_table = dict()
-
-        # this contains the mapping of node type to
-        # the count of that type of nodes
-        self.node_count = defaultdict(int)
-
-    def register_node(self, node_pointer: object, node_type: str) -> str:
-        '''
-        Register and Return the Node's Given ID
-        '''
-
-        # generate the node id (starts from 0)
-        node_id = f'{node_type}_{self.node_count[node_type]}'
-
-        # and increment the node type count
-        self.node_count[node_type] += 1
-
-        # add the node object to the mapping table
-        self.node_table[node_id] = node_pointer
-
-        # return the node id
-        return node_id
-
-    def get_node(self, node_id: str) -> Union[object, None]:
-        '''
-        Get the Node object from the node ID
-        '''
-
-        return self.node_table.get(node_id, None)
+from graphviz import Digraph
 
 
 class BasicBlockTypes(Enum):
@@ -85,7 +48,7 @@ class Node(object):
     def __init__(self, ast_node: dict,
                  entry_node_id: str, prev_node_id: str,
                  join_node_id: str, exit_node_id: str,
-                 cfg_metadata: CFGMetadata, extra_node=None):
+                 cfg_metadata, graph: Digraph, extra_node=None):
         '''
         Constructor
         '''
@@ -96,10 +59,16 @@ class Node(object):
         if not extra_node is None:
             self.basic_block_type = \
                 BasicBlockTypes.Entry if 'Entry' in extra_node.value else BasicBlockTypes.Exit
-            self.node_type = extra_node
+            self.node_type = extra_node.value
             self.cfg_id = cfg_metadata.register_node(self, extra_node)
 
             print(f'Processing CFG Node {self.cfg_id}')
+
+            # allocate this node to the graph and
+            # add an edge from the previous node to this one
+            graph.node(self.cfg_id, label=self.cfg_id)
+            if prev_node_id is not None:
+                graph.edge(prev_node_id, self.cfg_id)
 
         # set the entry node and the exit node
         # entry node is start (global) and exit node is end (global)
@@ -157,3 +126,41 @@ class Node(object):
         '''
 
         self.exit_node = node_id
+
+
+class CFGMetadata(object):
+    '''
+    Metadata Container Class Definition
+    '''
+
+    def __init__(self):
+        # this contains the mapping of Node ID to node object
+        self.node_table = dict()
+
+        # this contains the mapping of node type to
+        # the count of that type of nodes
+        self.node_count = defaultdict(int)
+
+    def register_node(self, node_pointer: Node, node_type: str) -> str:
+        '''
+        Register and Return the Node's Given ID
+        '''
+
+        # generate the node id (starts from 0)
+        node_id = f'{node_type}_{self.node_count[node_type]}'
+
+        # and increment the node type count
+        self.node_count[node_type] += 1
+
+        # add the node object to the mapping table
+        self.node_table[node_id] = node_pointer
+
+        # return the node id
+        return node_id
+
+    def get_node(self, node_id: str) -> Union[Node, None]:
+        '''
+        Get the Node object from the node ID
+        '''
+
+        return self.node_table.get(node_id, None)
