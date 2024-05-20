@@ -1,6 +1,6 @@
 import json
 from compiler import SolCompiler
-
+from control_flow_graph import ControlFlowGraph
 source = '''
 pragma solidity ^0.4.0;
 
@@ -29,3 +29,7 @@ print(ast.keys())
 
 with open('./gen/ast.json', 'w', encoding='utf8') as f:
     json.dump(ast, f, indent=4)
+
+
+cfg = ControlFlowGraph(source, ast)
+cfg.build_cfg()

@@ -1,9 +1,8 @@
 '''
 Class definition for the Source Unit CFG (AST) node
 '''
-from typing import Union
-from control_flow_graph.node_processor import CFGMetadata
-from control_flow_graph.node_processor import BasicBlockTypes
+from control_flow_graph.helpers import CFGMetadata
+from control_flow_graph.node_processor.nodes import BasicBlockTypes
 from control_flow_graph.node_processor.nodes import Node
 import control_flow_graph.node_processor.nodes as nodes
 
@@ -25,12 +24,14 @@ class SourceUnit(Node):
                                          cfg_metadata)
 
         # set the basic block type and node type
-        self.basic_block_type = BasicBlockTypes.EntryBlock
+        self.basic_block_type = BasicBlockTypes.Entry
         self.node_type = 'SourceUnit'
 
         # register the node to the CFG Metadata store and
         # obtain a CFG ID of the form f'{node_type}_{n}'
         self.cfg_id = cfg_metadata.register_node(self, self.node_type)
+
+        print(f'Processing CFG Node {self.cfg_id}')
 
         # node specific metadata
         # exported symbols from the source unit
