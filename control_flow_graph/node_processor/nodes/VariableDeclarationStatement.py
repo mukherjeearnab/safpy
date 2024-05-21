@@ -1,5 +1,5 @@
 '''
-Class definition for the Variable Declaration CFG (AST) node
+Class definition for the VariableDeclarationStatement CFG (AST) node
 '''
 from graphviz import Digraph
 from control_flow_graph.node_processor import CFGMetadata
@@ -8,9 +8,9 @@ from control_flow_graph.node_processor import Node
 import control_flow_graph.node_processor.nodes as nodes
 
 
-class VariableDeclaration(Node):
+class VariableDeclarationStatement(Node):
     '''
-    Variable Declaration Node
+    VariableDeclarationStatement Node
     '''
 
     def __init__(self, ast_node: dict,
@@ -19,12 +19,12 @@ class VariableDeclaration(Node):
         '''
         Constructor
         '''
-        super(VariableDeclaration, self).__init__(ast_node, entry_node_id, prev_node_id,
-                                                  exit_node_id, cfg_metadata)
+        super(VariableDeclarationStatement, self).__init__(ast_node, entry_node_id, prev_node_id,
+                                                           exit_node_id, cfg_metadata)
 
         # set the basic block type and node type
         self.basic_block_type = BasicBlockTypes.Statement
-        self.node_type = 'VariableDeclaration'
+        self.node_type = 'VariableDeclarationStatement'
 
         # link the previous node to indexing
         self.add_prev_node(prev_node_id)

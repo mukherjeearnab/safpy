@@ -104,3 +104,44 @@ class ControlFlowGraph(object):
         traverse(self.entry_node.cfg_id, graph, visited, self.cfg_metadata)
 
         graph.render(filename='./gen/cfg.png')
+
+    def generate_dot_bottom_up(self) -> str:
+        '''
+        Traverse the CFG and generate a Graphviz Digraph DOT file
+        '''
+        graph = Digraph(comment='Control Flow Graph')
+        visited = set()
+
+        def traverse(node_id, graph: Digraph, visited: set, cfg_metadata: CFGMetadata):
+            '''
+            Traverse the Graph and Generate the Digraph
+            '''
+
+            if node_id in visited:
+                return
+
+            # add to visited set
+            visited.add(node_id)
+
+            # get node instance / object
+            node = cfg_metadata.get_node(node_id)
+
+            print(node_id)
+
+            graph.node(node_id, label=node_id)
+
+            print(
+                getattr(node, 'next_nodes', None),
+                getattr(node, 'prev_nodes', None))
+
+            for child_id in node.prev_nodes:
+                child_node = cfg_metadata.get_node(child_id)
+
+                traverse(child_node.cfg_id, graph, visited, cfg_metadata)
+
+                graph.edge(child_id, node_id,
+                           label=node.prev_nodes[child_id]['label'])
+
+        traverse(self.exit_node.cfg_id, graph, visited, self.cfg_metadata)
+
+        graph.render(filename='./gen/cfg.rev.png')

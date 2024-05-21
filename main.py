@@ -9,9 +9,9 @@ contract c {
     int b = 12;
 
     function run() {
+        uint m = 20;
         if (a == 10) {
-        if (a % 2 == 0) {b += 1;}
-        else {b += a + 1;}
+        b+=1;
         } else {
             b -= 1;
         }
@@ -34,4 +34,5 @@ with open('./gen/ast.json', 'w', encoding='utf8') as f:
 
 cfg = ControlFlowGraph(source, ast)
 cfg.build_cfg()
-cfg.generate_dot()
+# cfg.generate_dot()
+cfg.generate_dot_bottom_up()

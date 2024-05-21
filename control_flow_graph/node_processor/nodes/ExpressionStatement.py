@@ -25,6 +25,9 @@ class ExpressionStatement(Node):
         self.basic_block_type = BasicBlockTypes.Statement
         self.node_type = 'ExpressionStatement'
 
+        # link the previous node to indexing
+        self.add_prev_node(prev_node_id)
+
         # register the node to the CFG Metadata store and
         # obtain a CFG ID of the form f'{node_type}_{n}'
         self.cfg_id = cfg_metadata.register_node(self, self.node_type)

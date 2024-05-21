@@ -182,6 +182,9 @@ class Node(NodeInterface):
         Method to add previous node's id
         '''
 
+        if node_id is None:
+            return
+
         self.prev_nodes[node_id] = {
             'label': label,
             'extra_data': extra_data
@@ -191,6 +194,8 @@ class Node(NodeInterface):
         '''
         Method to add next node's id
         '''
+        if node_id is None:
+            return
 
         self.next_nodes[node_id] = {
             'label': label,

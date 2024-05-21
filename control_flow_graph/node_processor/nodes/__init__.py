@@ -13,3 +13,4 @@ from control_flow_graph.node_processor.nodes.IfStatement import IfStatement
 from control_flow_graph.node_processor.nodes.PragmaDirective import PragmaDirective
 from control_flow_graph.node_processor.nodes.SourceUnit import SourceUnit
 from control_flow_graph.node_processor.nodes.VariableDeclaration import VariableDeclaration
+from control_flow_graph.node_processor.nodes.VariableDeclarationStatement import VariableDeclarationStatement
