@@ -79,14 +79,24 @@ class FunctionDefinition(Node):
                                           function_entry.cfg_id, body_prev_statement,
                                           function_exit.cfg_id, cfg_metadata)
 
+            # also link the previous statement in the block with the current statement
+            # 1. first obtain the prev node's leaves
+            child_leaves = self.cfg_metadata.get_node(
+                body_prev_statement).get_leaf_nodes()
+
+            # 2. now check if the leaf node is there or we need to link the previous node itself
+            to_link = body_prev_statement if len(
+                child_leaves) == 0 else child_leaves.pop()
+
+            # 3. link the leaf node's next as the child node
+            self.cfg_metadata.get_node(
+                to_link).add_next_node(child_node.cfg_id)
+
             # add the child node's ID to the next_nodes list
             body_prev_statement = child_node.cfg_id
 
-            # obtain the cfg_id for the next node for function block
-            if i == 0:
-                function_entry.add_next_node(child_node.cfg_id)
-
-            self.leaves.update(child_node.get_leaf_nodes())
+            if i == len(body_statements) - 1:
+                self.leaves.update(child_node.get_leaf_nodes())
 
         last_stmt_node = self.leaves.pop()
 

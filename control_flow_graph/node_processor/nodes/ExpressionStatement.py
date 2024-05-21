@@ -45,5 +45,16 @@ class ExpressionStatement(Node):
         Returns the leaf node(a) in the current branch,
         where the current node is the root node 
         '''
+        child_leaves = set()
+        # recursively traverse all the nodes till we hit the leaf nodes
+        for node_id in self.next_nodes.keys():
+            node = self.cfg_metadata.get_node(node_id)
+            _leaves = node.get_leaf_nodes()
+
+            child_leaves.update(_leaves)
+
+        if len(child_leaves) > 0:
+            self.leaves = set()
+            self.leaves.update(child_leaves)
 
         return self.leaves
