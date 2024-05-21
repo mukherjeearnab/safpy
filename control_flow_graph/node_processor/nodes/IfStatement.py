@@ -60,18 +60,32 @@ class IfStatement(Node):
                                           self.entry_node, body_prev_statement,
                                           self.join_node, cfg_metadata)
 
-            # add the child node's ID to the next_nodes list
-            body_prev_statement = child_node.cfg_id
-
             # obtain the cfg_id for the next node for the if block
             if i == 0:
                 self.add_next_node(child_node.cfg_id, label='True')
                 self.true_body_next = child_node.cfg_id
+            else:
+                # also link the previous statement in the block with the current statement
+                # 1. first obtain the prev node's leaves
+                child_leaves = self.cfg_metadata.get_node(
+                    body_prev_statement).get_leaf_nodes()
 
-            self.leaves.update(child_node.get_leaf_nodes())
+                # 2. now check if the leaf node is there or we need to link the previous node itself
+                to_link = body_prev_statement if len(
+                    child_leaves) == 0 else child_leaves.pop()
 
-        # add the join node's previous node as the last child of the block
-        join_node.add_prev_node(body_prev_statement)
+                # 3. link the leaf node's next as the child node
+                self.cfg_metadata.get_node(
+                    to_link).add_next_node(child_node.cfg_id)
+
+            # add the child node's ID to the next_nodes list
+            body_prev_statement = child_node.cfg_id
+
+            if i == len(true_body_statements) - 1:
+                self.leaves.update(child_node.get_leaf_nodes())
+
+        # # add the join node's previous node as the last child of the block
+        # join_node.add_prev_node(body_prev_statement)
 
         #######################
         # False Body Processing
@@ -90,14 +104,28 @@ class IfStatement(Node):
                                           self.entry_node, body_prev_statement,
                                           self.join_node, cfg_metadata)
 
-            # add the child node's ID to the next_nodes list
-            body_prev_statement = child_node.cfg_id
-
             # obtain the cfg_id for the next node for the if block
             if i == 0:
                 self.add_next_node(child_node.cfg_id, label='False')
                 self.false_body_next = child_node.cfg_id
+            else:
+                # also link the previous statement in the block with the current statement
+                # 1. first obtain the prev node's leaves
+                child_leaves = self.cfg_metadata.get_node(
+                    body_prev_statement).get_leaf_nodes()
 
+                # 2. now check if the leaf node is there or we need to link the previous node itself
+                to_link = body_prev_statement if len(
+                    child_leaves) == 0 else child_leaves.pop()
+
+                # 3. link the leaf node's next as the child node
+                self.cfg_metadata.get_node(
+                    to_link).add_next_node(child_node.cfg_id)
+
+            # add the child node's ID to the next_nodes list
+            body_prev_statement = child_node.cfg_id
+
+            if i == len(false_body_statements) - 1:
                 self.leaves.update(child_node.get_leaf_nodes())
 
         while len(self.leaves) != 0:
@@ -105,7 +133,7 @@ class IfStatement(Node):
             last_stmt_node = self.leaves.pop()
 
             # add the join node's previous node as the last child of the block
-            join_node.add_prev_node(body_prev_statement)
+            join_node.add_prev_node(last_stmt_node)
 
             # also add the next node of last child as the exit node
             cfg_metadata.get_node(

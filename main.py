@@ -15,6 +15,7 @@ contract c {
         m = b - 2;
         } else {
             b -= 1;
+            b -= a-m;
         }
         int n = 10;
         m += n;
