@@ -13,6 +13,7 @@ contract c {
         if (a == 10) {
         b+=1;
         m = b - 2;
+        int nn = 10;
         } else {
             b -= 1;
             b -= a-m;
@@ -38,5 +39,5 @@ with open('./gen/ast.json', 'w', encoding='utf8') as f:
 
 cfg = ControlFlowGraph(source, ast)
 cfg.build_cfg()
-cfg.generate_dot()
-# cfg.generate_dot_bottom_up()
+# cfg.generate_dot()
+cfg.generate_dot_bottom_up()

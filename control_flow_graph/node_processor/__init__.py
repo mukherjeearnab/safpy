@@ -159,6 +159,7 @@ class Node(NodeInterface):
         # entry node is start (global) and exit node is end (global)
         self.entry_node = entry_node_id
         self.exit_node = exit_node_id
+        self.join_node = None
 
         # init next nodes as a list of node ids
         # same goes for previous nodes, but we initially add the previous_node

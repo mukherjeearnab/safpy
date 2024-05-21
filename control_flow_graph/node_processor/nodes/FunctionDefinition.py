@@ -81,19 +81,19 @@ class FunctionDefinition(Node):
 
             # also link the previous statement in the block with the current statement
             # 1. first obtain the prev node's leaves
-            child_leaves = self.cfg_metadata.get_node(
+            prev_leaves = self.cfg_metadata.get_node(
                 body_prev_statement).get_leaf_nodes()
 
             # 2. now check if the leaf node is there or we need to link the previous node itself
             to_link = body_prev_statement if len(
-                child_leaves) == 0 else child_leaves.pop()
+                prev_leaves) == 0 else next(iter(prev_leaves))
 
             # 3. link the leaf node's next as the child node
             self.cfg_metadata.get_node(
                 to_link).add_next_node(child_node.cfg_id)
 
             # add the child node's ID to the next_nodes list
-            body_prev_statement = child_node.cfg_id
+            body_prev_statement = child_node.cfg_id if child_node.join_node is None else child_node.join_node
 
             if i == len(body_statements) - 1:
                 self.leaves.update(child_node.get_leaf_nodes())
