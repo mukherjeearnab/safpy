@@ -46,23 +46,40 @@ class VariableDeclarationStatement(Node):
         self.name = ast_node.get('name', None)
         self.scope = ast_node.get('scope', None)
 
+        # since it does not have any children, set this as the leaf node
         self.leaves.add(self.cfg_id)
 
     def get_leaf_nodes(self) -> set:
         '''
         Returns the leaf node(a) in the current branch,
         where the current node is the root node 
+
+        Note that this might not have children, but this can be part of a Block statemtent,
+        hence a chain of statements, therefore we check the next nodes for leaf nodes
         '''
-        # child_leaves = set()
-        # # recursively traverse all the nodes till we hit the leaf nodes
-        # for node_id in self.next_nodes.keys():
-        #     node = self.cfg_metadata.get_node(node_id)
-        #     _leaves = node.get_leaf_nodes()
 
-        #     child_leaves.update(_leaves)
+        # init child leaves
+        child_leaves = set()
 
-        # if len(child_leaves) > 0:
-        #     self.leaves = set()
-        #     self.leaves.update(child_leaves)
+        # recursively traverse all the nodes till we hit the leaf nodes
+        for node_id in self.next_nodes.keys():
+            # obtain the next node's instance
+            node = self.cfg_metadata.get_node(node_id)
+
+            # obtain their leaf nodes (recursive)
+            _leaves = node.get_leaf_nodes()
+
+            # add them to the child nodes
+            child_leaves.update(_leaves)
+
+        # now if there are leaf nodes obtained from the next node,
+        # we need to drop the leaf nodes of the current node
+        # and propogate the nodes of the next node as leaf nodes
+        if len(child_leaves) > 0:
+            # reset leaves
+            self.leaves = set()
+
+            # add the child nodes
+            self.leaves.update(child_leaves)
 
         return self.leaves

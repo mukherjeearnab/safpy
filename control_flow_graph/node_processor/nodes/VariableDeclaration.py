@@ -46,6 +46,7 @@ class VariableDeclaration(Node):
         self.name = ast_node.get('name', None)
         self.scope = ast_node.get('scope', None)
 
+        # add self as a leaf node (because this node does not have any children)
         self.leaves.add(self.cfg_id)
 
     def get_leaf_nodes(self) -> set:

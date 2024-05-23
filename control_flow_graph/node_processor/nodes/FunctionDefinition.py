@@ -95,9 +95,13 @@ class FunctionDefinition(Node):
             # add the child node's ID to the next_nodes list
             body_prev_statement = child_node.cfg_id if child_node.join_node is None else child_node.join_node
 
+            # if it is the last node in the statements block,
+            # them we needto obtain the leaf nodes of this one,
+            # and link their next as the exit node of the function
             if i == len(body_statements) - 1:
                 self.leaves.update(child_node.get_leaf_nodes())
 
+        # pop the leaf node
         last_stmt_node = self.leaves.pop()
 
         # set the previous node of the exit node as the last statement of the body
@@ -107,6 +111,7 @@ class FunctionDefinition(Node):
         cfg_metadata.get_node(
             last_stmt_node).add_next_node(function_exit.cfg_id)
 
+        # finally, add the function exit as the leaf of the function
         self.leaves.add(function_exit.cfg_id)
 
     def get_leaf_nodes(self) -> set:

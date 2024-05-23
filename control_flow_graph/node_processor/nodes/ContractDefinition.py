@@ -53,16 +53,16 @@ class ContractDefinition(Node):
             child_node_type = child['nodeType']
 
             # obtain the child node's constructor
-            childConstructor = getattr(nodes, child_node_type)
+            childConstructor = getattr(nodes, child_node_type, Node)
 
             # initialize the child node (recursive)
             child_node = childConstructor(child, self.entry_node, self.cfg_id,
-                                          self.exit_node, cfg_metadata)
+                                          self.exit_node, self.cfg_metadata)
 
             # add the child node's ID to the next_nodes list
             self.add_next_node(child_node.cfg_id)
 
-            # obtain the leaf nodes from the child nodes
+            # obtain the leaf nodes from the child nodes (recursively, DFS)
             self.leaves.update(child_node.get_leaf_nodes())
 
     def get_leaf_nodes(self) -> set:
@@ -73,9 +73,13 @@ class ContractDefinition(Node):
 
         # recursively traverse all the nodes till we hit the leaf nodes
         for node_id in self.next_nodes.keys():
+            # obtain node instance of the child node
             node = self.cfg_metadata.get_node(node_id)
+
+            # obtain the leaf nodes from the child node (recursively)
             _leaves = node.get_leaf_nodes()
 
+            # update the leaf nodes for self
             self.leaves.update(_leaves)
 
         return self.leaves

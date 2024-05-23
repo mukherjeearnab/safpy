@@ -65,9 +65,13 @@ class SourceUnit(Node):
 
         # recursively traverse all the nodes till we hit the leaf nodes
         for node_id in self.next_nodes.keys():
+            # obtain node instance of the child node
             node = self.cfg_metadata.get_node(node_id)
+
+            # obtain the leaf nodes from the child node (recursively)
             _leaves = node.get_leaf_nodes()
 
+            # update the leaf nodes for self
             self.leaves.update(_leaves)
 
         return self.leaves

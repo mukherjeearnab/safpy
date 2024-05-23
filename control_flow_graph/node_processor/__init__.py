@@ -155,6 +155,9 @@ class Node(NodeInterface):
         # the cfg metadata object
         self.cfg_metadata = cfg_metadata
 
+        # the cfg id object
+        self.cfg_id = None
+
         # set the entry node and the exit node
         # entry node is start (global) and exit node is end (global)
         self.entry_node = entry_node_id
