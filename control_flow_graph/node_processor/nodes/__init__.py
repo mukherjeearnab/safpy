@@ -14,3 +14,4 @@ from control_flow_graph.node_processor.nodes.PragmaDirective import PragmaDirect
 from control_flow_graph.node_processor.nodes.SourceUnit import SourceUnit
 from control_flow_graph.node_processor.nodes.VariableDeclaration import VariableDeclaration
 from control_flow_graph.node_processor.nodes.VariableDeclarationStatement import VariableDeclarationStatement
+from control_flow_graph.node_processor.nodes.WhileStatement import WhileStatement

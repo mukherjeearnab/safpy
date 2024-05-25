@@ -10,17 +10,10 @@ contract c {
 
     function run() {
         int m = 20;
-        if (a == 10) {
-        b+=1;
-        m = b - 2;
-        int nn = 10;
-        m = nn - 1;
-        } else {
-            b -= 1;
-            b -= a-m;
+        while(m > 0) {
+            m -= 1;
+            a += m;
         }
-        int n = 10;
-        m += n;
     }
 }
 
