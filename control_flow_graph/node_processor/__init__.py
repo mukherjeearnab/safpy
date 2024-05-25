@@ -163,6 +163,7 @@ class Node(NodeInterface):
         self.entry_node = entry_node_id
         self.exit_node = exit_node_id
         self.join_node = None
+        self.condition_node = None
 
         # init next nodes as a list of node ids
         # same goes for previous nodes, but we initially add the previous_node
@@ -201,7 +202,17 @@ class Node(NodeInterface):
         if node_id is None:
             return
 
-        self.next_nodes[node_id] = {
+        node_for_next = node_id
+
+        # get the node instance and check for any condition nodes
+        node = self.cfg_metadata.get_node(node_id)
+        if not node.condition_node is None:
+            node_for_next = node.condition_node
+
+        print("add-next", self.cfg_id, node_id,
+              node_for_next, self.cfg_id == node_for_next)
+
+        self.next_nodes[node_for_next] = {
             'label': label,
             'extra_data': extra_data
         }

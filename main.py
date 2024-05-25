@@ -13,7 +13,14 @@ contract c {
         while(m > 0) {
             m -= 1;
             a += m;
+            if(a < 10) {
+                a += 10;
+            } else {
+                a -= 10;
+            }
         }
+        m = 0;
+        m += 1;
     }
 }
 

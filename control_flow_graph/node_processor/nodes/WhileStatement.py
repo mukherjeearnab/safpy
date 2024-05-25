@@ -39,15 +39,16 @@ class WhileStatement(Node):
         # generate the condition node
         condition_node = WhileLoopCondition(dict(), self.entry_node, prev_node_id,
                                             self.exit_node, cfg_metadata)
+        # link the next node of the condition node
+        condition_node.add_next_node(self.cfg_id)
+
+        # assign the condition node for the while loop block
         self.condition_node = condition_node.cfg_id
 
         # generate the join node
         join_node = WhileLoopJoin(dict(), self.entry_node, self.cfg_id,
                                   self.exit_node, cfg_metadata)
         self.join_node = join_node.cfg_id
-
-        # link the next node of the condition node
-        condition_node.add_next_node(self.cfg_id)
 
         # link the previous node to indexing
         self.add_prev_node(self.condition_node)
@@ -85,6 +86,8 @@ class WhileStatement(Node):
                 to_link = body_prev_statement if len(
                     prev_leaves) == 0 else next(iter(prev_leaves))
 
+                print("TOLINK", body_prev_statement, to_link, prev_leaves)
+
                 # 3. link the leaf node's next as the current child node
                 self.cfg_metadata.get_node(
                     to_link).add_next_node(child_node.cfg_id)
@@ -95,8 +98,9 @@ class WhileStatement(Node):
             # for the last node in the block,
             # connect it to the join node
             if i == len(body_statements) - 1:
-                child_node.add_next_node(self.condition_node)
-                condition_node.add_prev_node(child_node.cfg_id)
+                self.cfg_metadata.get_node(
+                    body_prev_statement).add_next_node(self.condition_node)
+                condition_node.add_prev_node(body_prev_statement)
 
         # link the join node to the current node as the break edge
         self.add_next_node(self.join_node, label='break')
