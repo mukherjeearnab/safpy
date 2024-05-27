@@ -10,15 +10,7 @@ contract c {
 
     function run() {
         int m = 20;
-        while(m > 0) {
-            m -= 1;
-            a += m;
-            if(a < 10) {
-                a += 10;
-            } else {
-                a -= 10;
-            }
-        }
+        if (a == 10) { m -= 1; }
         m = 0;
         m += 1;
     }
