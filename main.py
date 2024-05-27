@@ -5,20 +5,23 @@ source = '''
 pragma solidity ^0.4.0;
 
 contract c {
-    int a = 10;
+    //int a = 10;
     int b = 12;
 
     function run() {
         int m = 20;
-        if (a == 10) { m -= 1; }
-        m = 0;
-        m += 1;
+        for (int c = 0; c < 10; c++) {
+            m += 1;
+            b -= m;
+        }
+        //m = 0;
+        //m += 1;
     }
 }
-
+/*
 contract d {
     int a = 0;
-}
+}*/
 
 '''
 

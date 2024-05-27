@@ -1,17 +1,17 @@
 '''
-Class definition for the WhileStatement CFG (AST) node
+Class definition for the ForStatement CFG (AST) node
 '''
 from graphviz import Digraph
 from control_flow_graph.node_processor import CFGMetadata
 from control_flow_graph.node_processor import Node, ExtraNodes, BasicBlockTypes
 import control_flow_graph.node_processor.nodes as nodes
-from control_flow_graph.node_processor.nodes.extra_nodes.WhileLoopJoin import WhileLoopJoin
-from control_flow_graph.node_processor.nodes.extra_nodes.WhileLoopCondition import WhileLoopCondition
+from control_flow_graph.node_processor.nodes.extra_nodes.ForLoopJoin import ForLoopJoin
+from control_flow_graph.node_processor.nodes.extra_nodes.ForLoopCondition import ForLoopCondition
 
 
-class WhileStatement(Node):
+class ForStatement(Node):
     '''
-    WhileStatement Node
+    ForStatement Node
     '''
 
     def __init__(self, ast_node: dict,
@@ -20,12 +20,12 @@ class WhileStatement(Node):
         '''
         Constructor
         '''
-        super(WhileStatement, self).__init__(ast_node, entry_node_id, prev_node_id,
-                                             exit_node_id, cfg_metadata)
+        super(ForStatement, self).__init__(ast_node, entry_node_id, prev_node_id,
+                                           exit_node_id, cfg_metadata)
 
         # set the basic block type and node type
         self.basic_block_type = BasicBlockTypes.Loop
-        self.node_type = 'WhileStatement'
+        self.node_type = 'ForStatement'
 
         # register the node to the CFG Metadata store and
         # obtain a CFG ID of the form f'{node_type}_{n}'
@@ -36,22 +36,47 @@ class WhileStatement(Node):
         # node specific metadata
         self.condition = ast_node.get('condition', dict())
 
+        ############################
+        # Set Continue Node
         # generate the condition node
-        condition_node = WhileLoopCondition(dict(), self.entry_node, prev_node_id,
-                                            self.exit_node, cfg_metadata)
+        condition_node = ForLoopCondition(dict(), self.entry_node, None,
+                                          self.exit_node, cfg_metadata)
+
         # link the next node of the condition node
-        condition_node.add_next_node(self.cfg_id)
-
-        # assign the condition node for the while loop block
         self.condition_node = condition_node.cfg_id
+        self.add_prev_node(self.condition_node)
+        condition_node.add_next_node(self.cfg_id, _internal=True)
 
+        ############################
+        # Set Initializer Node
+        # generate the initilization node
+        init_node_ast = ast_node.get('initializationExpression', dict())
+
+        # obtain the init node's type
+        init_node_type = init_node_ast['nodeType']
+
+        # obtain the child node's constructor
+        initConstructor = getattr(nodes, init_node_type, Node)
+
+        # initialize the child node (recursive)
+        init_node = initConstructor(init_node_ast, self.entry_node, prev_node_id,
+                                    self.exit_node, self.cfg_metadata)
+
+        # set and link the init node
+        self.init_node = init_node.cfg_id
+        init_node.add_next_node(self.condition_node)
+        condition_node.add_prev_node(self.init_node)
+
+        ############################
+        # Set Join Node
         # generate the join node
-        join_node = WhileLoopJoin(dict(), self.entry_node, self.cfg_id,
-                                  self.exit_node, cfg_metadata)
+        join_node = ForLoopJoin(dict(), self.entry_node, self.cfg_id,
+                                self.exit_node, cfg_metadata)
         self.join_node = join_node.cfg_id
 
-        # link the previous node to indexing
-        self.add_prev_node(self.condition_node)
+        # link the join node to the current node as the break edge
+        self.add_next_node(self.join_node, label='break')
+        join_node.add_prev_node(self.cfg_id, label='break')
 
         ######################
         # Body Processing
@@ -95,16 +120,31 @@ class WhileStatement(Node):
             # add the child node's ID as the previous statement for next iteration
             body_prev_statement = child_node.cfg_id if child_node.join_node is None else child_node.join_node
 
-            # for the last node in the block,
-            # connect it to the join node
-            if i == len(body_statements) - 1:
-                self.cfg_metadata.get_node(
-                    body_prev_statement).add_next_node(self.condition_node)
-                condition_node.add_prev_node(body_prev_statement)
+        ############################
+        # Set Loop Expression Node
+        # generate the loop expression node
+        loop_node_ast = ast_node.get('loopExpression', dict())
 
-        # link the join node to the current node as the break edge
-        self.add_next_node(self.join_node, label='break')
-        join_node.add_prev_node(self.cfg_id, label='break')
+        # obtain the loop node's type
+        loop_node_type = loop_node_ast['nodeType']
+
+        # obtain the child node's constructor
+        loopConstructor = getattr(nodes, loop_node_type, Node)
+
+        # initialize the child node (recursive)
+        loop_node = loopConstructor(loop_node_ast, self.entry_node, None,
+                                    self.exit_node, self.cfg_metadata)
+
+        # set and link the loop node with the last child node of the loop body statements
+        self.loop_node = loop_node.cfg_id
+        self.cfg_metadata.get_node(
+            body_prev_statement).add_next_node(self.loop_node)
+        loop_node.add_prev_node(body_prev_statement)
+
+        # for the loop expr node being the last node in the block,
+        # connect it to the condition / continue node
+        loop_node.add_next_node(self.condition_node)
+        condition_node.add_prev_node(self.loop_node)
 
         # finally add self (condition node) as the leaf
         # (at this point the leaf nodes set should be empty)
@@ -160,6 +200,6 @@ class WhileStatement(Node):
         This method handles such special cases where the next node might not exactly be the node itself, 
         but rather some special node of that node's block
 
-        In this case we return the id of the condition / continue node of the while loop
+        In this case we return the id of the initlization node of the for loop
         '''
-        return self.condition_node
+        return self.init_node

@@ -96,6 +96,19 @@ class NodeInterface(object):
 
         raise NotImplementedError
 
+    def get_whois_next_node(self) -> str:
+        '''
+        Get who is the next node for their node id
+        For nodes like for or while loops,
+        nodes like the continue and initialiation statement become the next node, 
+        instead of the loop statement / condition node.
+
+        This method handles such special cases where the next node might not exactly be the node itself, 
+        but rather some special node of that node's block
+        '''
+
+        raise NotImplementedError
+
 
 class CFGMetadata(object):
     '''
@@ -195,22 +208,19 @@ class Node(NodeInterface):
             'extra_data': extra_data
         }
 
-    def add_next_node(self, node_id: str, label=None, extra_data=None) -> None:
+    def add_next_node(self, node_id: str, label=None, extra_data=None, _internal=False) -> None:
         '''
         Method to add next node's id
         '''
         if node_id is None:
             return
 
+        # get the whois next node, or skip it if internal call
         node_for_next = node_id
-
-        # get the node instance and check for any condition nodes
-        node = self.cfg_metadata.get_node(node_id)
-        if not node.condition_node is None:
-            node_for_next = node.condition_node
-
-        print("add-next", self.cfg_id, node_id,
-              node_for_next, self.cfg_id == node_for_next)
+        if not _internal:
+            # get the node instance and check for any condition nodes
+            node = self.cfg_metadata.get_node(node_id)
+            node_for_next = node.get_whois_next_node()
 
         self.next_nodes[node_for_next] = {
             'label': label,
@@ -238,3 +248,16 @@ class Node(NodeInterface):
         '''
 
         raise NotImplementedError
+
+    def get_whois_next_node(self) -> str:
+        '''
+        Get who is the next node for their node id
+        For nodes like for or while loops,
+        nodes like the continue and initialiation statement become the next node, 
+        instead of the loop statement / condition node.
+
+        This method handles such special cases where the next node might not exactly be the node itself, 
+        but rather some special node of that node's block
+        '''
+
+        return self.cfg_id
