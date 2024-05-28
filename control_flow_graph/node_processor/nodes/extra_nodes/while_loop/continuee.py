@@ -1,15 +1,14 @@
 '''
-Class definition for the WhileLoopJoin CFG (Extra) node
+Class definition for the WhileLoopContinue CFG (Extra) node
 '''
-from graphviz import Digraph
 from control_flow_graph.node_processor import CFGMetadata
 from control_flow_graph.node_processor import BasicBlockTypes
 from control_flow_graph.node_processor import Node
 
 
-class WhileLoopJoin(Node):
+class WhileLoopContinue(Node):
     '''
-    WhileLoopJoin Node
+    WhileLoopContinue Node
     '''
 
     def __init__(self, ast_node: dict,
@@ -18,12 +17,12 @@ class WhileLoopJoin(Node):
         '''
         Constructor
         '''
-        super(WhileLoopJoin, self).__init__(ast_node, entry_node_id, prev_node_id,
-                                            exit_node_id, cfg_metadata)
+        super(WhileLoopContinue, self).__init__(ast_node, entry_node_id, prev_node_id,
+                                                exit_node_id, cfg_metadata)
 
         # set the basic block type and node type
-        self.basic_block_type = BasicBlockTypes.Exit
-        self.node_type = 'WhileLoopJoin'
+        self.basic_block_type = BasicBlockTypes.Entry
+        self.node_type = 'WhileLoopContinue'
 
         # link the previous node to indexing
         self.add_prev_node(prev_node_id)

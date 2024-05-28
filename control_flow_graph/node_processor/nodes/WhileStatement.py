@@ -1,12 +1,11 @@
 '''
 Class definition for the WhileStatement CFG (AST) node
 '''
-from graphviz import Digraph
 from control_flow_graph.node_processor import CFGMetadata
-from control_flow_graph.node_processor import Node, ExtraNodes, BasicBlockTypes
+from control_flow_graph.node_processor import Node, BasicBlockTypes
 import control_flow_graph.node_processor.nodes as nodes
-from control_flow_graph.node_processor.nodes.extra_nodes.WhileLoopJoin import WhileLoopJoin
-from control_flow_graph.node_processor.nodes.extra_nodes.WhileLoopCondition import WhileLoopCondition
+from control_flow_graph.node_processor.nodes.extra_nodes.while_loop.join import WhileLoopJoin
+from control_flow_graph.node_processor.nodes.extra_nodes.while_loop.continuee import WhileLoopContinue
 
 
 class WhileStatement(Node):
@@ -36,14 +35,14 @@ class WhileStatement(Node):
         # node specific metadata
         self.condition = ast_node.get('condition', dict())
 
-        # generate the condition node
-        condition_node = WhileLoopCondition(dict(), self.entry_node, prev_node_id,
-                                            self.exit_node, cfg_metadata)
-        # link the next node of the condition node
-        condition_node.add_next_node(self.cfg_id)
+        # generate the continue node
+        continue_node = WhileLoopContinue(dict(), self.entry_node, prev_node_id,
+                                          self.exit_node, cfg_metadata)
+        # link the next node of the continue node
+        continue_node.add_next_node(self.cfg_id)
 
-        # assign the condition node for the while loop block
-        self.condition_node = condition_node.cfg_id
+        # assign the continue node for the while loop block
+        self.continue_node = continue_node.cfg_id
 
         # generate the join node
         join_node = WhileLoopJoin(dict(), self.entry_node, self.cfg_id,
@@ -51,7 +50,7 @@ class WhileStatement(Node):
         self.join_node = join_node.cfg_id
 
         # link the previous node to indexing
-        self.add_prev_node(self.condition_node)
+        self.add_prev_node(self.continue_node)
 
         ######################
         # Body Processing
@@ -68,7 +67,7 @@ class WhileStatement(Node):
             # initialize the child node (recursive)
             child_node = childConstructor(statement,
                                           self.entry_node, body_prev_statement,
-                                          self.condition_node, cfg_metadata)
+                                          self.continue_node, cfg_metadata)
 
             # for the first statement node in the block, link it to the while condition
             # and label the edge as the Body (true)
@@ -99,14 +98,14 @@ class WhileStatement(Node):
             # connect it to the join node
             if i == len(body_statements) - 1:
                 self.cfg_metadata.get_node(
-                    body_prev_statement).add_next_node(self.condition_node)
-                condition_node.add_prev_node(body_prev_statement)
+                    body_prev_statement).add_next_node(self.continue_node)
+                continue_node.add_prev_node(body_prev_statement)
 
         # link the join node to the current node as the break edge
         self.add_next_node(self.join_node, label='break')
         join_node.add_prev_node(self.cfg_id, label='break')
 
-        # finally add self (condition node) as the leaf
+        # finally add the join node as the leaf
         # (at this point the leaf nodes set should be empty)
         self.leaves.add(self.join_node)
 
@@ -160,6 +159,6 @@ class WhileStatement(Node):
         This method handles such special cases where the next node might not exactly be the node itself, 
         but rather some special node of that node's block
 
-        In this case we return the id of the condition / continue node of the while loop
+        In this case we return the id of the continue node of the while loop
         '''
-        return self.condition_node
+        return self.continue_node

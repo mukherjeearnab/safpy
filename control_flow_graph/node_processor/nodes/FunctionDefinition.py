@@ -1,12 +1,11 @@
 '''
 Class definition for the Function Definition CFG (AST) node
 '''
-from graphviz import Digraph
 from control_flow_graph.node_processor import CFGMetadata
-from control_flow_graph.node_processor import Node, BasicBlockTypes, ExtraNodes
+from control_flow_graph.node_processor import Node, BasicBlockTypes
 import control_flow_graph.node_processor.nodes as nodes
-from control_flow_graph.node_processor.nodes.extra_nodes.FunctionEntry import FunctionEntry
-from control_flow_graph.node_processor.nodes.extra_nodes.FunctionExit import FunctionExit
+from control_flow_graph.node_processor.nodes.extra_nodes.function.entry import FunctionEntry
+from control_flow_graph.node_processor.nodes.extra_nodes.function.exit import FunctionExit
 
 
 class FunctionDefinition(Node):

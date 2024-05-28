@@ -1,11 +1,9 @@
 '''
 Class definition for the Variable Declaration CFG (AST) node
 '''
-from graphviz import Digraph
 from control_flow_graph.node_processor import CFGMetadata
 from control_flow_graph.node_processor import BasicBlockTypes
 from control_flow_graph.node_processor import Node
-import control_flow_graph.node_processor.nodes as nodes
 
 
 class VariableDeclaration(Node):

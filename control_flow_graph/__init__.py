@@ -2,9 +2,8 @@ from graphviz import Digraph
 
 from control_flow_graph.node_processor import CFGMetadata
 import control_flow_graph.node_processor.nodes as nodes
-from control_flow_graph.node_processor import Node, ExtraNodes
-from control_flow_graph.node_processor.nodes.extra_nodes.SourceEntry import SourceEntry
-from control_flow_graph.node_processor.nodes.extra_nodes.SourceExit import SourceExit
+from control_flow_graph.node_processor.nodes.extra_nodes.source.entry import SourceEntry
+from control_flow_graph.node_processor.nodes.extra_nodes.source.exit import SourceExit
 
 
 class ControlFlowGraph(object):

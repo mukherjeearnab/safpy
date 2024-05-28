@@ -1,7 +1,6 @@
 '''
 Class definition for the FunctionExit CFG (Extra) node
 '''
-from graphviz import Digraph
 from control_flow_graph.node_processor import CFGMetadata
 from control_flow_graph.node_processor import BasicBlockTypes
 from control_flow_graph.node_processor import Node

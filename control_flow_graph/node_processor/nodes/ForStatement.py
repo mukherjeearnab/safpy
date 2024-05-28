@@ -1,12 +1,11 @@
 '''
 Class definition for the ForStatement CFG (AST) node
 '''
-from graphviz import Digraph
 from control_flow_graph.node_processor import CFGMetadata
-from control_flow_graph.node_processor import Node, ExtraNodes, BasicBlockTypes
+from control_flow_graph.node_processor import Node, BasicBlockTypes
 import control_flow_graph.node_processor.nodes as nodes
-from control_flow_graph.node_processor.nodes.extra_nodes.ForLoopJoin import ForLoopJoin
-from control_flow_graph.node_processor.nodes.extra_nodes.ForLoopCondition import ForLoopCondition
+from control_flow_graph.node_processor.nodes.extra_nodes.for_loop.join import ForLoopJoin
+from control_flow_graph.node_processor.nodes.extra_nodes.for_loop.continuee import ForLoopContinue
 
 
 class ForStatement(Node):
@@ -38,14 +37,14 @@ class ForStatement(Node):
 
         ############################
         # Set Continue Node
-        # generate the condition node
-        condition_node = ForLoopCondition(dict(), self.entry_node, None,
-                                          self.exit_node, cfg_metadata)
+        # generate the continue node
+        continue_node = ForLoopContinue(dict(), self.entry_node, None,
+                                        self.exit_node, cfg_metadata)
 
-        # link the next node of the condition node
-        self.condition_node = condition_node.cfg_id
-        self.add_prev_node(self.condition_node)
-        condition_node.add_next_node(self.cfg_id, _internal=True)
+        # link the next node of the continue node
+        self.continue_node = continue_node.cfg_id
+        self.add_prev_node(self.continue_node)
+        continue_node.add_next_node(self.cfg_id, _internal=True)
 
         ############################
         # Set Initializer Node
@@ -64,8 +63,8 @@ class ForStatement(Node):
 
         # set and link the init node
         self.init_node = init_node.cfg_id
-        init_node.add_next_node(self.condition_node)
-        condition_node.add_prev_node(self.init_node)
+        init_node.add_next_node(self.continue_node)
+        continue_node.add_prev_node(self.init_node)
 
         ############################
         # Set Join Node
@@ -93,7 +92,7 @@ class ForStatement(Node):
             # initialize the child node (recursive)
             child_node = childConstructor(statement,
                                           self.entry_node, body_prev_statement,
-                                          self.condition_node, cfg_metadata)
+                                          self.continue_node, cfg_metadata)
 
             # for the first statement node in the block, link it to the while condition
             # and label the edge as the Body (true)
@@ -142,11 +141,11 @@ class ForStatement(Node):
         loop_node.add_prev_node(body_prev_statement)
 
         # for the loop expr node being the last node in the block,
-        # connect it to the condition / continue node
-        loop_node.add_next_node(self.condition_node)
-        condition_node.add_prev_node(self.loop_node)
+        # connect it to the continue node
+        loop_node.add_next_node(self.continue_node)
+        continue_node.add_prev_node(self.loop_node)
 
-        # finally add self (condition node) as the leaf
+        # finally add the join node as the leaf
         # (at this point the leaf nodes set should be empty)
         self.leaves.add(self.join_node)
 

@@ -1,15 +1,14 @@
 '''
-Class definition for the IfConditionJoin CFG (Extra) node
+Class definition for the WhileLoopJoin CFG (Extra) node
 '''
-from graphviz import Digraph
 from control_flow_graph.node_processor import CFGMetadata
 from control_flow_graph.node_processor import BasicBlockTypes
 from control_flow_graph.node_processor import Node
 
 
-class IfConditionJoin(Node):
+class WhileLoopJoin(Node):
     '''
-    IfConditionJoin Node
+    WhileLoopJoin Node
     '''
 
     def __init__(self, ast_node: dict,
@@ -18,12 +17,12 @@ class IfConditionJoin(Node):
         '''
         Constructor
         '''
-        super(IfConditionJoin, self).__init__(ast_node, entry_node_id, prev_node_id,
-                                              exit_node_id, cfg_metadata)
+        super(WhileLoopJoin, self).__init__(ast_node, entry_node_id, prev_node_id,
+                                            exit_node_id, cfg_metadata)
 
         # set the basic block type and node type
-        self.basic_block_type = BasicBlockTypes.Entry
-        self.node_type = 'IfConditionJoin'
+        self.basic_block_type = BasicBlockTypes.Exit
+        self.node_type = 'WhileLoopJoin'
 
         # link the previous node to indexing
         self.add_prev_node(prev_node_id)

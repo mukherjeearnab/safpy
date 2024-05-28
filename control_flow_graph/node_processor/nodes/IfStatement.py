@@ -1,11 +1,10 @@
 '''
 Class definition for the If Statement CFG (AST) node
 '''
-from graphviz import Digraph
 from control_flow_graph.node_processor import CFGMetadata
-from control_flow_graph.node_processor import Node, ExtraNodes, BasicBlockTypes
+from control_flow_graph.node_processor import Node, BasicBlockTypes
 import control_flow_graph.node_processor.nodes as nodes
-from control_flow_graph.node_processor.nodes.extra_nodes.IfConditionJoin import IfConditionJoin
+from control_flow_graph.node_processor.nodes.extra_nodes.if_statement.join import IfConditionJoin
 
 
 class IfStatement(Node):
