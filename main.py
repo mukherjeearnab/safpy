@@ -10,11 +10,11 @@ contract c {
 
     function run() {
         int m = 20;
-        for (int c = 0; c < 10; c++) {
-            m += 1;
-            b -= m;
-        }
-        //m = 0;
+        do {
+            m -= 1;
+            m += 2;
+        } while (m < 40);
+        m = 0;
         //m += 1;
     }
 }

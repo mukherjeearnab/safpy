@@ -16,3 +16,4 @@ from control_flow_graph.node_processor.nodes.VariableDeclaration import Variable
 from control_flow_graph.node_processor.nodes.VariableDeclarationStatement import VariableDeclarationStatement
 from control_flow_graph.node_processor.nodes.WhileStatement import WhileStatement
 from control_flow_graph.node_processor.nodes.ForStatement import ForStatement
+from control_flow_graph.node_processor.nodes.DoWhileStatement import DoWhileStatement
