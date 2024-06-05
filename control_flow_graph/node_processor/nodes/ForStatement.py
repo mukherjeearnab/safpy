@@ -34,6 +34,8 @@ class ForStatement(Node):
 
         # node specific metadata
         self.condition = ast_node.get('condition', dict())
+        self.condition = getattr(nodes, self.condition['nodeType'], Node)(
+            self.condition, None, None, None, self.cfg_metadata)
 
         ############################
         # Set Continue Node

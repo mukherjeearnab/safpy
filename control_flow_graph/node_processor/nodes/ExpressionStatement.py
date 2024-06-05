@@ -4,6 +4,7 @@ Class definition for the Expression Statement CFG (AST) node
 from control_flow_graph.node_processor import CFGMetadata
 from control_flow_graph.node_processor import BasicBlockTypes
 from control_flow_graph.node_processor import Node
+import control_flow_graph.node_processor.nodes as nodes
 
 
 class ExpressionStatement(Node):
@@ -35,7 +36,9 @@ class ExpressionStatement(Node):
 
         # node specific metadata
         # exported symbols from the source unit
-        self.expresion = ast_node.get('expresion', dict())
+        self.expression = ast_node.get('expression', dict())
+        self.expression = getattr(nodes, self.expression['nodeType'], Node)(
+            self.expression, None, None, None, self.cfg_metadata)
 
         # since it does not have any children, set this as the leaf node
         self.leaves.add(self.cfg_id)

@@ -4,6 +4,7 @@ Class definition for the VariableDeclarationStatement CFG (AST) node
 from control_flow_graph.node_processor import CFGMetadata
 from control_flow_graph.node_processor import BasicBlockTypes
 from control_flow_graph.node_processor import Node
+import control_flow_graph.node_processor.nodes as nodes
 
 
 class VariableDeclarationStatement(Node):
@@ -34,15 +35,10 @@ class VariableDeclarationStatement(Node):
         print(f'Processing CFG Node {self.cfg_id}')
 
         # node specific metadata
-        self.constant = ast_node.get('constant', None)
-        self.visibility = ast_node.get('visibility', None)
-        self.value = ast_node.get('value', dict())
-        self.typeName = ast_node.get('typeName', dict())
-        self.typeDescriptions = ast_node.get('typeDescriptions', dict())
-        self.storageLocation = ast_node.get('storageLocation', None)
-        self.stateVariable = ast_node.get('stateVariable', None)
-        self.name = ast_node.get('name', None)
-        self.scope = ast_node.get('scope', None)
+        self.assignments = ast_node.get('assignments', None)
+        self.declarations = [getattr(nodes, declaration['nodeType'], Node)(declaration, None, None, None, self.cfg_metadata)
+                             for declaration in ast_node.get('declarations', [])]
+        self.initialValue = ast_node.get('initialValue', dict())
 
         # since it does not have any children, set this as the leaf node
         self.leaves.add(self.cfg_id)
@@ -50,7 +46,7 @@ class VariableDeclarationStatement(Node):
     def get_leaf_nodes(self) -> set:
         '''
         Returns the leaf node(a) in the current branch,
-        where the current node is the root node 
+        where the current node is the root node
 
         Note that this might not have children, but this can be part of a Block statemtent,
         hence a chain of statements, therefore we check the next nodes for leaf nodes

@@ -8,8 +8,8 @@ contract c {
     //int a = 10;
     int b = 12;
 
-    function run() {
-        int m = 20;
+    function run(int a, int b) {
+        (int m, int n) = (20,12);
         do {
             m -= 1;
             m += 2;

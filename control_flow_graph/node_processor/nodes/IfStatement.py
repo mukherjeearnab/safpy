@@ -36,6 +36,8 @@ class IfStatement(Node):
 
         # node specific metadata
         self.condition = ast_node.get('condition', dict())
+        self.condition = getattr(nodes, self.condition['nodeType'], Node)(
+            self.condition, None, None, None, self.cfg_metadata)
 
         # generate the join node
         join_node = IfConditionJoin(dict(), self.entry_node, None,
