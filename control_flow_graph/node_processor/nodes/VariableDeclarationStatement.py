@@ -39,6 +39,8 @@ class VariableDeclarationStatement(Node):
         self.declarations = [getattr(nodes, declaration['nodeType'], Node)(declaration, None, None, None, self.cfg_metadata)
                              for declaration in ast_node.get('declarations', [])]
         self.initialValue = ast_node.get('initialValue', dict())
+        self.initialValue = getattr(nodes, self.initialValue['nodeType'], Node)(
+            self.initialValue, None, None, None, self.cfg_metadata)
 
         # since it does not have any children, set this as the leaf node
         self.leaves.add(self.cfg_id)

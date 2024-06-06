@@ -41,7 +41,7 @@ class WhileStatement(Node):
         continue_node = WhileLoopContinue(dict(), self.entry_node, prev_node_id,
                                           self.exit_node, cfg_metadata)
         # link the next node of the continue node
-        continue_node.add_next_node(self.cfg_id)
+        continue_node.add_next_node(self.cfg_id, _internal=True)
 
         # assign the continue node for the while loop block
         self.continue_node = continue_node.cfg_id

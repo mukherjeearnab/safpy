@@ -17,3 +17,7 @@ from control_flow_graph.node_processor.nodes.VariableDeclarationStatement import
 from control_flow_graph.node_processor.nodes.WhileStatement import WhileStatement
 from control_flow_graph.node_processor.nodes.ForStatement import ForStatement
 from control_flow_graph.node_processor.nodes.DoWhileStatement import DoWhileStatement
+from control_flow_graph.node_processor.nodes.Assignment import Assignment
+from control_flow_graph.node_processor.nodes.BinaryOperation import BinaryOperation
+from control_flow_graph.node_processor.nodes.Identifier import Identifier
+from control_flow_graph.node_processor.nodes.Literal import Literal

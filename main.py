@@ -1,6 +1,7 @@
 import json
 from compiler import SolCompiler
 from control_flow_graph import ControlFlowGraph
+from static_analysis.dataflow_analysis.avl_expr import AvailableExpressionAnalysis
 source = '''
 pragma solidity ^0.4.0;
 
@@ -9,13 +10,13 @@ contract c {
     int b = 12;
 
     function run(int a, int b) {
-        (int m, int n) = (20,12);
-        do {
-            m -= 1;
-            m += 2;
-        } while (m < 40);
-        m = 0;
-        //m += 1;
+        int x = a + b;
+        int y = a * b;
+
+        while (y > a + b) {
+            a = a - 1;
+            x = a + b;
+        }
     }
 }
 /*
@@ -41,3 +42,8 @@ cfg = ControlFlowGraph(source, ast)
 cfg.build_cfg()
 cfg.generate_dot()
 cfg.generate_dot_bottom_up()
+
+avl_expr = AvailableExpressionAnalysis(
+    cfg, 'FunctionEntry_0', 'FunctionExit_0')
+
+avl_expr.compute()
