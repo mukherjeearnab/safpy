@@ -13,7 +13,7 @@ contract c {
         int x = a + b;
         int y = a * b;
 
-        while (y > a + b) {
+        while (y > 1) {
             a = a - 1;
             x = a + b;
         }

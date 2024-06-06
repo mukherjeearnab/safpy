@@ -1,3 +1,0 @@
-'''
-Auxiliary Classes and Functions
-'''

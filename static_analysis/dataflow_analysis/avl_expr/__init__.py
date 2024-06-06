@@ -3,8 +3,8 @@ The Available Expression DataFlow Analysis
 '''
 from typing import Union
 from control_flow_graph import ControlFlowGraph
-from static_analysis.dataflow_analysis.avl_expr.helpers.expr_builder import build_expression, build_variable_declaration
-from static_analysis.dataflow_analysis.avl_expr.helpers.expr_obj import Expression, ExpressionStatement
+from static_analysis.dataflow_analysis.avl_expr.expr_builder import expr_builder
+from static_analysis.dataflow_analysis.avl_expr.expr_builder.objects import Expression, ExpressionStatement
 
 
 class AvailableExpressionAnalysis(object):
@@ -42,7 +42,7 @@ class AvailableExpressionAnalysis(object):
         Get Node's ExpressionStatement from the table
         '''
 
-        return self.node_expr_table[node_id]
+        return self.node_expr_table[node_id] if node_id in self.node_expr_table else None
 
     def set_expr(self, expr_str: str, symbols: set) -> None:
         '''
@@ -187,11 +187,8 @@ class AvailableExpressionAnalysis(object):
             # get node instance / object
             node = cfg.cfg_metadata.get_node(node_id)
 
-            expr = None
-            if node.node_type == 'VariableDeclarationStatement':
-                expr = build_variable_declaration(node)
-            if node.node_type == 'ExpressionStatement':
-                expr = build_expression(node)
+            # build the expression, if available
+            expr = expr_builder(node)
 
             # register the expressions
             if expr is not None:
@@ -230,9 +227,8 @@ class AvailableExpressionAnalysis(object):
             # get node instance / object
             node = cfg.cfg_metadata.get_node(node_id)
 
-            expr = None
-            if node.node_type == 'VariableDeclarationStatement' or node.node_type == 'ExpressionStatement':
-                expr = self.get_node_expr(node_id)
+            # retrieve the expression, if available
+            expr = self.get_node_expr(node_id)
 
             ###########################
             # compute the generates set
