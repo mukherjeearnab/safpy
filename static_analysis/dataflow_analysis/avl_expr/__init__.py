@@ -1,7 +1,7 @@
 '''
 The Available Expression DataFlow Analysis
 '''
-
+from typing import Union
 from control_flow_graph import ControlFlowGraph
 from static_analysis.dataflow_analysis.avl_expr.helpers.expr_builder import build_expression, build_variable_declaration
 from static_analysis.dataflow_analysis.avl_expr.helpers.expr_obj import Expression, ExpressionStatement
@@ -81,6 +81,15 @@ class AvailableExpressionAnalysis(object):
 
         self.GEN[node_id].add(expr_str)
 
+    def get_gen(self, node_id: str) -> set:
+        '''
+        get gen record for a node
+        '''
+        if node_id not in self.GEN:
+            self.GEN[node_id] = set()
+
+        return self.GEN[node_id]
+
     def add_kill(self, node_id: str, expr_str: str) -> None:
         '''
         Add KILL record for a node
@@ -89,6 +98,57 @@ class AvailableExpressionAnalysis(object):
             self.KILL[node_id] = set()
 
         self.KILL[node_id].add(expr_str)
+
+    def get_kill(self, node_id: str) -> set:
+        '''
+        get kills record for a node
+        '''
+        if node_id not in self.KILL:
+            self.KILL[node_id] = set()
+
+        return self.KILL[node_id]
+
+    def add_entry(self, node_id: str, exprs: Union[str, set]) -> None:
+        '''
+        Add entry record for a node
+        '''
+        if node_id not in self.ENTRY:
+            self.ENTRY[node_id] = set()
+
+        if isinstance(exprs, set):
+            self.ENTRY[node_id].update(exprs)
+        else:
+            self.ENTRY[node_id].add(exprs)
+
+    def get_entry(self, node_id: str) -> set:
+        '''
+        get entry record for a node
+        '''
+        if node_id not in self.ENTRY:
+            self.ENTRY[node_id] = set()
+
+        return self.ENTRY[node_id]
+
+    def add_exit(self, node_id: str, exprs: Union[str, set]) -> None:
+        '''
+        Add exit record for a node
+        '''
+        if node_id not in self.EXIT:
+            self.EXIT[node_id] = set()
+
+        if isinstance(exprs, set):
+            self.EXIT[node_id].update(exprs)
+        else:
+            self.EXIT[node_id].add(exprs)
+
+    def get_exit(self, node_id: str) -> set:
+        '''
+        get exit record for a node
+        '''
+        if node_id not in self.EXIT:
+            self.EXIT[node_id] = set()
+
+        return self.EXIT[node_id]
 
     def compute(self) -> None:
         '''
@@ -101,6 +161,10 @@ class AvailableExpressionAnalysis(object):
         self.__compute_gen_kill()
         print(self.GEN)
         print(self.KILL)
+
+        self.__compute_avl_expr()
+        print(self.ENTRY)
+        print(self.EXIT)
 
     def __compute_expressions(self) -> None:
         '''
@@ -195,3 +259,51 @@ class AvailableExpressionAnalysis(object):
                     traverse(child_node.cfg_id, visited, cfg)
 
         traverse(self.starting_node, visited, self.cfg)
+
+    def __compute_avl_expr(self) -> None:
+        '''
+        Compute the GEN and KILL functions for all the nodes
+        '''
+
+        worklist = set()
+        visited = set()
+
+        # initialize worklist with initial node
+        worklist.add(self.starting_node)
+
+        while len(worklist) != 0:
+            node_id = worklist.pop()
+
+            print('WORKLIST PROCESS', node_id)
+
+            entries, exit_set = list(), set()
+
+            node = self.cfg.cfg_metadata.get_node(node_id)
+
+            #######################
+            # 1. compute the entry set
+            for prev_id in node.prev_nodes:
+                entries.append(self.get_exit(prev_id))
+
+            # in this case, we need intersection of all incoming branches
+            entry = set.intersection(*entries)
+
+            # finally update the entry set
+            self.add_entry(node_id, entry)
+
+            #######################
+            # 2. compute the exit set (based on the transfer function)
+            exit_set = set.difference(entry, self.get_kill(node_id))
+            exit_set = exit_set.union(self.get_gen(node_id))
+
+            #######################
+            # 3. if exit set is changed OR node is processed first time,
+            # add the next nodes of the node to worklist
+            if exit_set != self.get_exit(node_id) or node_id not in visited:
+                visited.add(node_id)
+
+                self.add_exit(node_id, exit_set)
+
+                if node_id != self.ending_node:
+                    for next_id in node.next_nodes:
+                        worklist.add(next_id)
