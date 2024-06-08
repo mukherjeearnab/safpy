@@ -21,3 +21,4 @@ from control_flow_graph.node_processor.nodes.Assignment import Assignment
 from control_flow_graph.node_processor.nodes.BinaryOperation import BinaryOperation
 from control_flow_graph.node_processor.nodes.Identifier import Identifier
 from control_flow_graph.node_processor.nodes.Literal import Literal
+from control_flow_graph.node_processor.nodes.FunctionCall import FunctionCall

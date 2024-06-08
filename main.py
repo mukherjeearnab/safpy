@@ -10,13 +10,14 @@ contract c {
     int b = 12;
 
     function run(int a, int b) {
-        int x = a + b;
+        /*int x = a + b;
         int y = a * b;
-
+        dd
         while (a > a+b) {
             a = a - 1;
             x = a + b;
-        }
+        }*/
+        require(a > b);
     }
 }
 /*
