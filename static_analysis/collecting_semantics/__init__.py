@@ -197,16 +197,14 @@ class CollectingSemanticsAnalysis(object):
 
         traverse(self.starting_node, visited, self.cfg)
 
-    def __compute_gen_kill(self) -> None:
+    def __compute_collecting_semantics(self) -> None:
         '''
-        Compute the GEN and KILL functions for all the nodes
+        Compute the Collecting Semantics
         '''
-
-        visited = set()
 
         def traverse(node_id, visited: set, cfg: ControlFlowGraph):
             '''
-            Traverse the Graph and Compute the GEN and KILL functions
+            Traverse the Graph and Compute the Collecting Semantics
             '''
 
             if node_id in visited:
@@ -218,26 +216,24 @@ class CollectingSemanticsAnalysis(object):
             # get node instance / object
             node = cfg.cfg_metadata.get_node(node_id)
 
-            # retrieve the expression, if available
+            # evaluate the expression, if present
             expr = self.get_node_expr(node_id)
 
-            ###########################
-            # compute the generates set
-            # if there are right symbols present, and no right symbol is present in the left side
-            # if a symbol from the right side is present in the left side, this means, it is writing after generation
-            # in that case the generated set will be empty
-            if expr is not None:
-                if len(expr.right_symbols) > 0 and len(expr.right_symbols.intersection(expr.left_symbols)) == 0:
-                    self.add_gen(node_id, expr.right_str)
+            # update the variable in question, if changed
+            '''
+            This should work like, 
+            first, we obtain the values of the existing variables from exit node of the previous nodes:
+                1. obtain the exit of the previous nodes
+                2. apply the meet operator to these exit states
+                3. set this new one as the entry of the current (update entry state)
+            second, compute the expression (if any based on the entry state values)
+            third, update the exit state of the current node based on the computed expression
+                1. check if exit node's current value is different from the evaluated expression
+                2. if yes, update the exit state of the current node
+                3. else continue to next nodes
+            '''
 
-            ###########################
-            # compute the kills set
-            if expr is not None:
-                for symbol in expr.left_symbols:
-                    for expression in self.get_exprs_with_symbol(symbol):
-                        self.add_kill(node_id, expression)
-
-            print("GEN-KILL", node_id)
+            print("COLSEM-COMPUT", node_id)
 
             if node_id != self.ending_node:
                 for child_id in node.next_nodes:
@@ -245,7 +241,13 @@ class CollectingSemanticsAnalysis(object):
 
                     traverse(child_node.cfg_id, visited, cfg)
 
-        traverse(self.starting_node, visited, self.cfg)
+        visited = set()
+        while True:
+            self.point_state.start_computation_round()
+            traverse(self.starting_node, visited, self.cfg)
+
+            if self.point_state.is_fixed_point_reached():
+                break
 
     def __compute_avl_expr(self) -> None:
         '''
