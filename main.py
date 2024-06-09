@@ -1,7 +1,9 @@
 import json
 from compiler import SolCompiler
 from control_flow_graph import ControlFlowGraph
-from static_analysis.dataflow_analysis.avl_expr import AvailableExpressionAnalysis
+# from static_analysis.dataflow_analysis.avl_expr import AvailableExpressionAnalysis
+from static_analysis.collecting_semantics import CollectingSemanticsAnalysis
+
 source = '''
 pragma solidity ^0.4.0;
 
@@ -10,14 +12,13 @@ contract c {
     int b = 12;
 
     function run(int a, int b) {
-        /*int x = a + b;
+        int x = a + b;
         int y = a * b;
-        dd
         while (a > a+b) {
             a = a - 1;
             x = a + b;
-        }*/
-        require(a > b);
+        }
+        //require(a > b);
     }
 }
 /*
@@ -44,7 +45,7 @@ cfg.build_cfg()
 cfg.generate_dot()
 cfg.generate_dot_bottom_up()
 
-avl_expr = AvailableExpressionAnalysis(
+csem = CollectingSemanticsAnalysis(
     cfg, 'FunctionEntry_0', 'FunctionExit_0')
 
-avl_expr.compute()
+csem.compute()
