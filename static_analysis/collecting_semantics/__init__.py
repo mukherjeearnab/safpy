@@ -3,7 +3,7 @@ The Collecting Semantics Analysis
 '''
 from typing import Union
 from control_flow_graph import ControlFlowGraph
-from static_analysis.collecting_semantics.objects import VariableRegistry
+from static_analysis.collecting_semantics.objects import VariableRegistry, PointState
 import static_analysis.collecting_semantics.builder as builder
 # from static_analysis.dataflow_analysis.avl_expr.expr_builder import expr_builder
 # from static_analysis.dataflow_analysis.avl_expr.expr_builder.objects import Expression, ExpressionStatement
@@ -28,6 +28,7 @@ class CollectingSemanticsAnalysis(object):
         self.EXIT = dict()
 
         self.variable_registry = VariableRegistry()
+        self.point_state = PointState(self.variable_registry)
 
     def add_gen(self, node_id: str, expr_str: str) -> None:
         '''
@@ -117,19 +118,15 @@ class CollectingSemanticsAnalysis(object):
         self.__compute_variables()
         print(self.variable_registry.variable_table.keys())
 
+        # initialize the node variable states
+        self.__init_node_var_states()
+
         '''
-        next, we start with traversing the cfg, visiting each node,
+        [DONE] next, we start with traversing the cfg, visiting each node,
+        [DONE] inti the state of each of the node variables
         and compute the variable states at the entry and exit of the node
         (do this until for each node's (exit point) previous state is exactly the same as the current state)
         '''
-
-        # self.__compute_gen_kill()
-        # print(self.GEN)
-        # print(self.KILL)
-
-        # self.__compute_avl_expr()
-        # print(self.ENTRY)
-        # print(self.EXIT)
 
     def __compute_variables(self) -> None:
         '''
@@ -158,6 +155,39 @@ class CollectingSemanticsAnalysis(object):
                 self.variable_registry.register_variable(variable)
 
             print("VARIABLE-REGISTRY", node_id, variables)
+
+            if node_id != self.ending_node:
+                for child_id in node.next_nodes:
+                    child_node = cfg.cfg_metadata.get_node(child_id)
+
+                    traverse(child_node.cfg_id, visited, cfg)
+
+        traverse(self.starting_node, visited, self.cfg)
+
+    def __init_node_var_states(self) -> None:
+        '''
+        Init the node variable states for entry and exit points for all the nodes in the CFG
+        '''
+
+        visited = set()
+
+        def traverse(node_id, visited: set, cfg: ControlFlowGraph):
+            '''
+            Traverse the Graph and Init the states
+            '''
+
+            if node_id in visited:
+                return
+
+            # add to visited set
+            visited.add(node_id)
+
+            # get node instance / object
+            node = cfg.cfg_metadata.get_node(node_id)
+
+            self.point_state.register_node(node_id)
+
+            print("Node-StateInit", node_id)
 
             if node_id != self.ending_node:
                 for child_id in node.next_nodes:
