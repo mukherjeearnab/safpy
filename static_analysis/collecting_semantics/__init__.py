@@ -23,13 +23,6 @@ class CollectingSemanticsAnalysis(object):
         self.starting_node = starting_node
         self.ending_node = ending_node
 
-        # the gen and kill sets:
-        # the gen set contains the state-tuples that a statement generates
-        # the kill set contains the state-tuples that a statement kills
-        # however, statements won't be killing any state-tuples
-        self.GEN = dict()
-        self.KILL = dict()
-
         # the entry and exit sets of state-tuples for a particular statement
         self.ENTRY = dict()
         self.EXIT = dict()
@@ -123,6 +116,12 @@ class CollectingSemanticsAnalysis(object):
         # obtain the variables to track the state of
         self.__compute_variables()
         print(self.variable_registry.variable_table.keys())
+
+        '''
+        next, we start with traversing the cfg, visiting each node,
+        and compute the variable states at the entry and exit of the node
+        (do this until for each node's (exit point) previous state is exactly the same as the current state)
+        '''
 
         # self.__compute_gen_kill()
         # print(self.GEN)
