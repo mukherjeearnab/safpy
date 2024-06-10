@@ -36,9 +36,6 @@ def generate_exit_sets(node: VariableDeclarationStatement, entry_set: Set[Tuple[
     exit_set = set()
     # for each state tuple in entry set,
     for state_tuple in entry_set:
-        # add the state tuple in the exit set
-        exit_set.add(deepcopy(state_tuple))
-
         # EDGE CASE: if the variable is not declared with any values
         if node.initialValue is None:
             continue
@@ -47,12 +44,21 @@ def generate_exit_sets(node: VariableDeclarationStatement, entry_set: Set[Tuple[
         expr_value = compute_expression_object(
             node.initialValue, var_registry, const_registry)
 
+        print(node.cfg_id, expr_value, left_symbol)
+
         # create a copy of the entry set state tuple
         new_state_tuple = deepcopy(state_tuple)
 
         # replace the lhs variable's value in the tuple
-        new_state_tuple = update_state_tuple(
+        new_state_tuple, need_to_drop = update_state_tuple(
             new_state_tuple, left_symbol, expr_value, var_registry)
+
+        # also update the value in the variable registry
+        var_registry.set_value(left_symbol, expr_value)
+
+        # add the state tuple in the exit set
+        if not need_to_drop:
+            exit_set.add(deepcopy(state_tuple))
 
         # add this newly generated tuple to exit set
         exit_set.add(new_state_tuple)

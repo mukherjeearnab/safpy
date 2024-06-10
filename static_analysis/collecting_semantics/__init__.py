@@ -40,8 +40,9 @@ class CollectingSemanticsAnalysis(object):
 
         self.__compute_collecting_semantics()
         for node in self.point_state.node_states.keys():
-            print(node, self.point_state.get_node_state_set(
-                node, self.point_state.iteration))
+            for i in range(self.point_state.iteration):
+                print(i, node, self.point_state.get_node_state_set(
+                    node, i, False))
 
     def __compute_variables(self) -> None:
         '''
@@ -132,7 +133,7 @@ class CollectingSemanticsAnalysis(object):
                 3. else continue to next nodes
             '''
 
-            print("COLlSEM-COMPUT", node_id)
+            # print("COLlSEM-COMPUT", node_id)
 
             if node_id != self.ending_node:
                 for child_id in node.next_nodes:
@@ -145,6 +146,9 @@ class CollectingSemanticsAnalysis(object):
             self.point_state.start_computation_round()
             print('Start Iter:', self.point_state.iteration)
             traverse(self.starting_node, visited, self.cfg)
+
+            # print(self.point_state.iteration, 'VariableDeclarationStatement_1', self.point_state.get_node_state_set(
+            #     'VariableDeclarationStatement_1', self.point_state.iteration, True))
 
             if self.point_state.is_fixed_point_reached():
                 break

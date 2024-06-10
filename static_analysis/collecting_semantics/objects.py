@@ -216,6 +216,6 @@ class PointState(object):
         '''
         # obtain the variable names and init the state tuple
         variables = self.variable_registry.variable_table.keys()
-        state_tuple = tuple(NumericalDomain.Bottom for _ in variables)
+        state_tuple = tuple('btm' for _ in variables)
 
         return state_tuple
