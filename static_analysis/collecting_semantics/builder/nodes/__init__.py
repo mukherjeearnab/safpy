@@ -5,4 +5,5 @@ from static_analysis.collecting_semantics.builder.nodes import ExpressionStateme
 from static_analysis.collecting_semantics.builder.nodes import VariableDeclarationStatement
 from static_analysis.collecting_semantics.builder.nodes import WhileStatement
 from static_analysis.collecting_semantics.builder.nodes import DoWhileStatement
+from static_analysis.collecting_semantics.builder.nodes import ForStatement
 from static_analysis.collecting_semantics.builder.nodes import IfStatement

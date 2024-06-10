@@ -22,3 +22,4 @@ from control_flow_graph.node_processor.nodes.BinaryOperation import BinaryOperat
 from control_flow_graph.node_processor.nodes.Identifier import Identifier
 from control_flow_graph.node_processor.nodes.Literal import Literal
 from control_flow_graph.node_processor.nodes.FunctionCall import FunctionCall
+from control_flow_graph.node_processor.nodes.UnaryOperation import UnaryOperation

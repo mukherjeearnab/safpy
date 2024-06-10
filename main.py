@@ -15,9 +15,9 @@ contract c {
         int a = 1;
         int b = 1;
         
-        do {
-        a = a + b;
-        } while (a < 3);
+        for (int i = 0; i < 3; i = i + 1) {
+            a = a + b;
+        }
 
         int d = a + b;
     }
