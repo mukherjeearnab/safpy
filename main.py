@@ -11,11 +11,15 @@ contract c {
     //int a = 10;
     int b = 12;
 
-    function run(int a, int b) {
-        int x = 10;
-        int y = 20;
-        x = x + y;
-        y = y - x;
+    function run() {
+        int a = 1;
+        int b = 1;
+        
+        while(a < 3) {
+            a = a + b;
+        }
+
+        int d = a + b;
     }
 }
 /*

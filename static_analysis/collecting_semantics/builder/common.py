@@ -94,10 +94,18 @@ def compute_binary_operation(left: int, right: int, operator: str) -> int:
         return left / right
     elif operator == '%':
         return left % right
-    # elif operator == '+=':
-    #     return left ** right
-    # elif operator == '<<':
-    #     return left << right
+    elif operator == '==':
+        return left == right
+    elif operator == '!=':
+        return left == right
+    elif operator == '<':
+        return left < right
+    elif operator == '<=':
+        return left <= right
+    elif operator == '>':
+        return left > right
+    elif operator == '>=':
+        return left >= right
     else:
         raise Exception(f'Operator {operator} not implemented yet!')
 
