@@ -5,7 +5,7 @@ from typing import Set, Tuple, Any, Dict
 from copy import deepcopy
 from static_analysis.collecting_semantics.objects import VariableRegistry
 from control_flow_graph.node_processor.nodes import ExpressionStatement
-from static_analysis.collecting_semantics.builder.common import traverse_expression_object, update_state_tuple, compute_expression_object
+from static_analysis.collecting_semantics.builder.common import traverse_expression_object, update_state_tuple, compute_expression_object, set_var_registry_state
 
 
 def get_variables(node: ExpressionStatement) -> Set[str]:
@@ -42,30 +42,25 @@ def generate_exit_sets(node: ExpressionStatement, entry_set: Set[Tuple[Any]],
 
     # init exit_set ('*') as empty set
     exit_set = set()
-    # for each state tuple in entry set,
+
+    # for each state in the entry state,
     for state_tuple in entry_set:
+        #   1. based on the state values, compute the expression
+        set_var_registry_state(state_tuple, var_registry)
+
         # compute the expression,
         expr_value = compute_expression_object(
             expression.rightHandSide, var_registry, const_registry)
 
-        print(node.cfg_id, expr_value, left_symbol,
-              expression.leftHandSide.node_type)
-
+        #   2. replace the computed variable (lhs) value in this particular state
         # create a copy of the entry set state tuple
         new_state_tuple = deepcopy(state_tuple)
 
         # replace the lhs variable's value in the tuple
-        new_state_tuple, need_to_drop = update_state_tuple(
+        new_state_tuple = update_state_tuple(
             new_state_tuple, left_symbol, expr_value, var_registry)
 
-        # also update the value in the variable registry
-        var_registry.set_value(left_symbol, expr_value)
-
-        # add the state tuple in the exit set
-        if not need_to_drop:
-            exit_set.add(deepcopy(state_tuple))
-
-        # add this newly generated tuple to exit set
+        #   3. add this new state to the set of exit states
         exit_set.add(new_state_tuple)
 
     return {'*': exit_set}
