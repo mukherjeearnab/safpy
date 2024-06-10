@@ -23,7 +23,7 @@ def get_variables(node: Node) -> Set[str]:
 
 
 def generate_exit_sets(node: Node, entry_set: Set[Tuple[Any]],
-                       var_registry: VariableRegistry, const_registry: VariableRegistry) -> Dict[Set[Tuple[Any]]]:
+                       var_registry: VariableRegistry, const_registry: VariableRegistry) -> Dict[str, Set[Tuple[Any]]]:
     '''
     Function to compute the exit set(s) from the given entry set and node semantics
     '''
@@ -31,6 +31,6 @@ def generate_exit_sets(node: Node, entry_set: Set[Tuple[Any]],
     node_module = getattr(nodes, node.node_type, None)
 
     if node_module is None:
-        return deepcopy(entry_set)
+        return deepcopy({'*': entry_set})
 
     return node_module.generate_exit_sets(node, entry_set, var_registry, const_registry)

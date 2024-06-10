@@ -38,15 +38,10 @@ class CollectingSemanticsAnalysis(object):
         self.__compute_variables()
         print(self.variable_registry.variable_table.keys())
 
-        # initialize the node variable states
-        self.__init_node_var_states()
-
-        '''
-        [DONE] next, we start with traversing the cfg, visiting each node,
-        [DONE] inti the state of each of the node variables
-        and compute the variable states at the entry and exit of the node
-        (do this until for each node's (exit point) previous state is exactly the same as the current state)
-        '''
+        self.__compute_collecting_semantics()
+        for node in self.point_state.node_states.keys():
+            print(node, self.point_state.get_node_state_set(
+                node, self.point_state.iteration))
 
     def __compute_variables(self) -> None:
         '''
@@ -111,27 +106,33 @@ class CollectingSemanticsAnalysis(object):
 
             # 1. udpate the entry state set for the node
             self.point_state.update_node_entry_state(node_id, prev_nodes)
+            entry_set = self.point_state.get_node_state_set(
+                node_id, self.point_state.iteration)
 
             # 2. process the node semantics and generate the exit state sets for it's next nodes
+            exit_sets = builder.generate_exit_sets(
+                node, entry_set, self.variable_registry, self.constant_registry)
 
             # 3. udpate the exit state set for the node
             # (EDGE CASE: for ending node, we will use the next node as '*')
+            for next_node_id, exit_set in exit_sets.items():
+                self.point_state.update_node_exit_state(
+                    node_id, next_node_id, exit_set)
 
-            # update the variable in question, if changed
             '''
             This should work like, 
             [DONE] first, we obtain the values of the existing variables from exit node of the previous nodes:
                 1. obtain the exit of the previous nodes
                 2. apply the meet operator to these exit states
                 3. set this new one as the entry of the current (update entry state)
-            second, compute the expression (if any based on the entry state values)
-            third, update the exit state of the current node based on the computed expression
+            [DONE] second, compute the expression (if any based on the entry state values)
+            [DONE] third, update the exit state of the current node based on the computed expression
                 1. check if exit node's current value is different from the evaluated expression
                 2. if yes, update the exit state of the current node
                 3. else continue to next nodes
             '''
 
-            print("COLSEM-COMPUT", node_id)
+            print("COLlSEM-COMPUT", node_id)
 
             if node_id != self.ending_node:
                 for child_id in node.next_nodes:
@@ -139,58 +140,11 @@ class CollectingSemanticsAnalysis(object):
 
                     traverse(child_node.cfg_id, visited, cfg)
 
-        visited = set()
         while True:
+            visited = set()
             self.point_state.start_computation_round()
+            print('Start Iter:', self.point_state.iteration)
             traverse(self.starting_node, visited, self.cfg)
 
             if self.point_state.is_fixed_point_reached():
                 break
-
-    def __compute_avl_expr(self) -> None:
-        '''
-        Compute the GEN and KILL functions for all the nodes
-        '''
-
-        worklist = set()
-        visited = set()
-
-        # initialize worklist with initial node
-        worklist.add(self.starting_node)
-
-        while len(worklist) != 0:
-            node_id = worklist.pop()
-
-            print('WORKLIST PROCESS', node_id)
-
-            entries, exit_set = list(), set()
-
-            node = self.cfg.cfg_metadata.get_node(node_id)
-
-            #######################
-            # 1. compute the entry set
-            for prev_id in node.prev_nodes:
-                entries.append(self.get_exit(prev_id))
-
-            # in this case, we need intersection of all incoming branches
-            entry = set.intersection(*entries)
-
-            # finally update the entry set
-            self.add_entry(node_id, entry)
-
-            #######################
-            # 2. compute the exit set (based on the transfer function)
-            exit_set = set.difference(entry, self.get_kill(node_id))
-            exit_set = exit_set.union(self.get_gen(node_id))
-
-            #######################
-            # 3. if exit set is changed OR node is processed first time,
-            # add the next nodes of the node to worklist
-            if exit_set != self.get_exit(node_id) or node_id not in visited:
-                visited.add(node_id)
-
-                self.add_exit(node_id, exit_set)
-
-                if node_id != self.ending_node:
-                    for next_id in node.next_nodes:
-                        worklist.add(next_id)

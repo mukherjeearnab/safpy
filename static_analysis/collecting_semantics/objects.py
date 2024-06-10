@@ -36,7 +36,7 @@ class VariableRegistry(object):
         Get the identifier of a variable
         '''
 
-        return self.variable_table[variable] if variable in self.variable_table else -1
+        return self.variable_table[variable]['id'] if variable in self.variable_table else -1
 
     def get_value(self, variable: str) -> Any:
         '''
@@ -175,7 +175,7 @@ class PointState(object):
         # obtain the exit state ordered-pair sets from the previous nodes
         prev_states = []
         for prev_node in prev_nodes:
-            prev_state = self.get_node_var_state(
+            prev_state = self.get_node_state_set(
                 prev_node, self.iteration - 1, is_entry=False, next_node=node_id)
             prev_states.append(prev_state)
 
