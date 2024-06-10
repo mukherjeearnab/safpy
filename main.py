@@ -15,9 +15,11 @@ contract c {
         int a = 1;
         int b = 1;
         
-        while(a < 3) {
+        if(a > 3) {
             a = a + b;
-        }
+        } /*else {
+            a = a - b;
+        }*/
 
         int d = a + b;
     }

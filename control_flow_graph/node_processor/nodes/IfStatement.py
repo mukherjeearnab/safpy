@@ -142,6 +142,9 @@ class IfStatement(Node):
             # also add self's next node as the join node
             self.add_next_node(self.join_node, label='False')
 
+            # also set the false body next
+            self.false_body_next = self.join_node
+
         # now for the leaf nodes in the set,
         # pop them one by one and link them with the join node of the if block
         while len(self.leaves) != 0:
