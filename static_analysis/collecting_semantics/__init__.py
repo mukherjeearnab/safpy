@@ -43,8 +43,8 @@ class CollectingSemanticsAnalysis(object):
             for i in range(self.point_state.iteration, self.point_state.iteration+1):
                 print('ENTRY', i, node, self.point_state.get_node_state_set(
                     node, i, True))
-                # print('EXIT', i, node, self.point_state.get_node_state_set(
-                #     node, i, False))
+                print('EXIT', i, node, self.point_state.get_node_state_set(
+                    node, i, False))
 
     def __compute_variables(self) -> None:
         '''

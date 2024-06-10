@@ -1,8 +1,7 @@
 '''
 Auxiliary Objects Module
 '''
-from typing import Any, Tuple, Union, List, Set
-from copy import deepcopy
+from typing import Any, Tuple, Union, List, Set, Dict
 from enum import Enum
 
 
@@ -107,7 +106,7 @@ class PointState(object):
         # in this case, if we don't need to specify a next node, we use the wildcard '*'
         self.node_states[node_id]['exit'][0] = {'*': set()}
 
-    def get_node_state_set(self, node_id: str, iteration: int, is_entry=True, next_node='*') -> None:
+    def get_node_state_set(self, node_id: str, iteration: int, is_entry=True, next_node='*') -> Union[Set[Tuple[int]], Dict[str, Set[Tuple[int]]]]:
         '''
         get the entry of a variable's state for a given node
         '''
@@ -124,7 +123,10 @@ class PointState(object):
         # for exit states, we need to also include the next node for which we fetch the exit node
         if not is_entry:
             if next_node not in self.node_states[node_id][point][iteration]:
-                return self.node_states[node_id][point][iteration]['*']
+                if '*' in self.node_states[node_id][point][iteration]:
+                    return self.node_states[node_id][point][iteration]['*']
+                else:
+                    return self.node_states[node_id][point][iteration]
             else:
                 return self.node_states[node_id][point][iteration][next_node]
 
