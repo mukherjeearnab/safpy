@@ -23,90 +23,10 @@ class CollectingSemanticsAnalysis(object):
         self.starting_node = starting_node
         self.ending_node = ending_node
 
-        # the entry and exit sets of state-tuples for a particular statement
-        self.ENTRY = dict()
-        self.EXIT = dict()
-
         self.variable_registry = VariableRegistry()
-        self.point_state = PointState(self.variable_registry)
-
-    def add_gen(self, node_id: str, expr_str: str) -> None:
-        '''
-        Add GEN record for a node
-        '''
-        if node_id not in self.GEN:
-            self.GEN[node_id] = set()
-
-        self.GEN[node_id].add(expr_str)
-
-    def get_gen(self, node_id: str) -> set:
-        '''
-        get gen record for a node
-        '''
-        if node_id not in self.GEN:
-            self.GEN[node_id] = set()
-
-        return self.GEN[node_id]
-
-    def add_kill(self, node_id: str, expr_str: str) -> None:
-        '''
-        Add KILL record for a node
-        '''
-        if node_id not in self.KILL:
-            self.KILL[node_id] = set()
-
-        self.KILL[node_id].add(expr_str)
-
-    def get_kill(self, node_id: str) -> set:
-        '''
-        get kills record for a node
-        '''
-        if node_id not in self.KILL:
-            self.KILL[node_id] = set()
-
-        return self.KILL[node_id]
-
-    def add_entry(self, node_id: str, exprs: Union[str, set]) -> None:
-        '''
-        Add entry record for a node
-        '''
-        if node_id not in self.ENTRY:
-            self.ENTRY[node_id] = set()
-
-        if isinstance(exprs, set):
-            self.ENTRY[node_id].update(exprs)
-        else:
-            self.ENTRY[node_id].add(exprs)
-
-    def get_entry(self, node_id: str) -> set:
-        '''
-        get entry record for a node
-        '''
-        if node_id not in self.ENTRY:
-            self.ENTRY[node_id] = set()
-
-        return self.ENTRY[node_id]
-
-    def add_exit(self, node_id: str, exprs: Union[str, set]) -> None:
-        '''
-        Add exit record for a node
-        '''
-        if node_id not in self.EXIT:
-            self.EXIT[node_id] = set()
-
-        if isinstance(exprs, set):
-            self.EXIT[node_id].update(exprs)
-        else:
-            self.EXIT[node_id].add(exprs)
-
-    def get_exit(self, node_id: str) -> set:
-        '''
-        get exit record for a node
-        '''
-        if node_id not in self.EXIT:
-            self.EXIT[node_id] = set()
-
-        return self.EXIT[node_id]
+        self.constant_registry = VariableRegistry()
+        self.point_state = PointState(
+            self.variable_registry, self.starting_node)
 
     def compute(self) -> None:
         '''
@@ -149,45 +69,15 @@ class CollectingSemanticsAnalysis(object):
             # get node instance / object
             node = cfg.cfg_metadata.get_node(node_id)
 
+            # register the node on the PointState instance
+            self.point_state.register_node(node_id)
+
             # register the variables obtained from the node
             variables = builder.get_variables(node)
             for variable in variables:
                 self.variable_registry.register_variable(variable)
 
             print("VARIABLE-REGISTRY", node_id, variables)
-
-            if node_id != self.ending_node:
-                for child_id in node.next_nodes:
-                    child_node = cfg.cfg_metadata.get_node(child_id)
-
-                    traverse(child_node.cfg_id, visited, cfg)
-
-        traverse(self.starting_node, visited, self.cfg)
-
-    def __init_node_var_states(self) -> None:
-        '''
-        Init the node variable states for entry and exit points for all the nodes in the CFG
-        '''
-
-        visited = set()
-
-        def traverse(node_id, visited: set, cfg: ControlFlowGraph):
-            '''
-            Traverse the Graph and Init the states
-            '''
-
-            if node_id in visited:
-                return
-
-            # add to visited set
-            visited.add(node_id)
-
-            # get node instance / object
-            node = cfg.cfg_metadata.get_node(node_id)
-
-            self.point_state.register_node(node_id)
-
-            print("Node-StateInit", node_id)
 
             if node_id != self.ending_node:
                 for child_id in node.next_nodes:
@@ -216,13 +106,21 @@ class CollectingSemanticsAnalysis(object):
             # get node instance / object
             node = cfg.cfg_metadata.get_node(node_id)
 
-            # evaluate the expression, if present
-            expr = self.get_node_expr(node_id)
+            # get the previous nodes list of the node
+            prev_nodes = list(node.prev_nodes.keys())
+
+            # 1. udpate the entry state set for the node
+            self.point_state.update_node_entry_state(node_id, prev_nodes)
+
+            # 2. process the node semantics and generate the exit state sets for it's next nodes
+
+            # 3. udpate the exit state set for the node
+            # (EDGE CASE: for ending node, we will use the next node as '*')
 
             # update the variable in question, if changed
             '''
             This should work like, 
-            first, we obtain the values of the existing variables from exit node of the previous nodes:
+            [DONE] first, we obtain the values of the existing variables from exit node of the previous nodes:
                 1. obtain the exit of the previous nodes
                 2. apply the meet operator to these exit states
                 3. set this new one as the entry of the current (update entry state)
