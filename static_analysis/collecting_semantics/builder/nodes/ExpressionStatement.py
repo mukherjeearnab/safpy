@@ -27,6 +27,16 @@ def get_variables(node: ExpressionStatement) -> Set[str]:
 
         return left_symbols
 
+    # handle UnaryOperation nodes
+    if expression.node_type == 'UnaryOperation':
+        # traverse and generate the left hand side
+        traverse_expression_object(
+            expression.subExpression, left_symbols)
+
+        return left_symbols
+    # can we moe this if else thingy to a class / module based calling method?
+    # this will really get complicated with more functionality being added
+
 
 def generate_exit_sets(node: ExpressionStatement, entry_set: Set[Tuple[Any]],
                        var_registry: VariableRegistry, const_registry: VariableRegistry) -> Dict[str, Set[Tuple[Any]]]:
