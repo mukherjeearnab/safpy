@@ -3,6 +3,7 @@ VariableDeclarationStatement Expression Handlers
 '''
 from typing import Set, Tuple, Any, Dict
 from copy import deepcopy
+import jpype
 from static_analysis.abstract_collecting_semantics.objects import VariableRegistry
 from control_flow_graph.node_processor.nodes import VariableDeclarationStatement
 from static_analysis.abstract_collecting_semantics.builder.common import update_state_tuple, compute_expression_object, set_var_registry_state
@@ -24,7 +25,8 @@ def get_variables(node: VariableDeclarationStatement) -> Set[str]:
 
 
 def generate_exit_sets(node: VariableDeclarationStatement, entry_set: Set[Tuple[Any]],
-                       var_registry: VariableRegistry, const_registry: VariableRegistry) -> Dict[str, Set[Tuple[Any]]]:
+                       var_registry: VariableRegistry, const_registry: VariableRegistry,
+                       manager: jpype.JClass) -> Dict[str, Set[Tuple[Any]]]:
     '''
     Function to compute the exit set(s) from the given entry set and node semantics
     '''
@@ -32,31 +34,24 @@ def generate_exit_sets(node: VariableDeclarationStatement, entry_set: Set[Tuple[
     # init symbol sets
     left_symbol = get_variables(node).pop()
 
-    # init exit_set ('*') as empty set
-    exit_set = set()
+    Abstract0 = jpype.JClass("apron.Abstract0")
+    Texpr0Intern = jpype.JClass("apron.Texpr0Intern")
 
-    # for each state in the entry state,
-    for state_tuple in entry_set:
-        # EDGE CASE: if the variable is not declared with any values
-        if node.initialValue is None:
-            continue
+    # EDGE CASE: if the variable is not declared with any values
+    if node.initialValue is None:
+        return {'*': Abstract0(manager, entry_set)}
 
-        #   1. based on the state values, compute the expression
-        set_var_registry_state(state_tuple, var_registry)
+    #   1. based on the state values, compute the expression
+    expr = compute_expression_object(
+        node.initialValue, var_registry, const_registry,
+        entry_set, manager)
 
-        # compute the expression,
-        expr_value = compute_expression_object(
-            node.initialValue, var_registry, const_registry)
+    # Assuming parsed_expression returns a Texpr0Node or similar
+    expr = Texpr0Intern(expr)
 
-        #   2. replace the computed variable (lhs) value in this particular state
-        # create a copy of the entry set state tuple
-        new_state_tuple = deepcopy(state_tuple)
+    #   2. replace the computed variable (lhs) value in this particular state
+    variable_index = var_registry.get_id(left_symbol)
+    new_state = entry_set.assignCopy(manager, variable_index, expr, None)
 
-        # replace the lhs variable's value in the tuple
-        new_state_tuple = update_state_tuple(
-            new_state_tuple, left_symbol, expr_value, var_registry)
-
-        #   3. add this new state to the set of exit states
-        exit_set.add(new_state_tuple)
-
-    return {'*': exit_set}
+    #   3. add this new state to the set of exit states
+    return {'*': new_state}

@@ -158,6 +158,10 @@ class PointState(object):
             current_state = self.node_states[node_id]['entry'][self.iteration]
             prev_state = self.node_states[node_id]['entry'][self.iteration - 1]
 
+            # EDGE CASE: prev state is None
+            if prev_state is None:
+                return False
+
             # if the current state is not equal to the previous state,
             # then the fixed point has not been reached
             # in this case we use the apron method isEqual to check the similarity
@@ -184,13 +188,18 @@ class PointState(object):
         for prev_node in prev_nodes:
             prev_state = self.get_node_state_set(
                 prev_node, self.iteration - 1, is_entry=False, next_node=node_id)
-            prev_states.append(prev_state)
+            if prev_state is not None:
+                prev_states.append(prev_state)
 
-        # set the union as the entry set at the current iteration
-        abs_state = prev_states.pop()
-        for state in prev_states:
-            # use the apron method to join (union of) the two states
-            abs_state = abs_state.joinCopy(state)
+        # if previous states is empty, then generate a new state
+        if len(prev_states) == 0:
+            abs_state = self.__generate_state_tuple()
+        else:
+            # set the union as the entry set at the current iteration
+            abs_state = prev_states.pop()
+            for state in prev_states:
+                # use the apron method to join (union of) the two states
+                abs_state = abs_state.joinCopy(self.manager, state)
 
         self.node_states[node_id]['entry'][self.iteration] = abs_state
 
@@ -235,7 +244,10 @@ class PointState(object):
         real_variables_count = 0
 
         # init the Inverval for every variable
-        box_state = [Interval() for _ in variables]
+        # box_state = [Interval() for _ in variables]
+        box_state = Interval[int_variables_count]
+        for i in range(int_variables_count):
+            box_state[i] = Interval()
 
         # generate the level 0 abstract state
         state = Abstract0(self.manager, int_variables_count,

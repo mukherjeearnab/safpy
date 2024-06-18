@@ -58,11 +58,13 @@ class AbstractCollectingSemanticsAnalysis(object):
         self.__compute_variables()
         print(self.variable_registry.variable_table.keys())
 
-        # self.__compute_abstract_collecting_semantics()
+        Arrays = jpype.JClass("java.util.Arrays")
+
+        self.__compute_abstract_collecting_semantics()
         for node in self.point_state.node_states.keys():
             for i in range(self.point_state.iteration, self.point_state.iteration+1):
-                print('ENTRY', i, node, self.point_state.get_node_state_set(
-                    node, i, True))
+                print('ENTRY', i, node, Arrays.toString(self.point_state.get_node_state_set(
+                    node, i, True).toBox(self.manager)))
                 print('EXIT', i, node, self.point_state.get_node_state_set(
                     node, i, False))
 
@@ -136,7 +138,7 @@ class AbstractCollectingSemanticsAnalysis(object):
 
             # 2. process the node semantics and generate the exit state sets for it's next nodes
             exit_sets = builder.generate_exit_sets(
-                node, entry_set, self.variable_registry, self.constant_registry)
+                node, entry_set, self.variable_registry, self.constant_registry, self.manager)
 
             # 3. udpate the exit state set for the node
             # (EDGE CASE: for ending node, we will use the next node as '*')

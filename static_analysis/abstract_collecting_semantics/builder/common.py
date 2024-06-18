@@ -1,4 +1,5 @@
 from typing import Tuple, Any, Union
+import jpype
 from static_analysis.abstract_collecting_semantics.objects import VariableRegistry
 from control_flow_graph.node_processor import Node
 
@@ -44,22 +45,31 @@ def update_state_tuple(state_tuple: Tuple[Any], variable: str, value: Any, var_r
     return tuple(state_tuple)
 
 
-def compute_expression_object(node: Node, var_registry: VariableRegistry, const_registry: VariableRegistry) -> int:
+def compute_expression_object(node: Node, var_registry: VariableRegistry, const_registry: VariableRegistry,
+                              abstract_state: jpype.JClass, manager: jpype.JClass) -> int:
     '''
     Recursively Compute the Expression Object and return the value
     '''
 
+    MpqScalar = jpype.JClass("apron.MpqScalar")
+    Linterm0 = jpype.JClass("apron.Linterm0")
+    Linexpr0 = jpype.JClass("apron.Linexpr0")
+    Texpr0CstNode = jpype.JClass("apron.Texpr0CstNode")
+    Texpr0Node = jpype.JClass("apron.Texpr0Node")
+    Texpr0Intern = jpype.JClass("apron.Texpr0Intern")
+    Texpr0DimNode = jpype.JClass("apron.Texpr0DimNode")
+
     # base case: if node type is a Literal, return the value
     if node.node_type == 'Literal':
-        return int(node.value)
+        return Texpr0CstNode(MpqScalar(int(node.value)))
 
     # base case: if node type is a Identifier,
     # retrieve the value from var_registry or const_registry
     if node.node_type == 'Identifier':
         if node.name in var_registry.variable_table.keys():
-            return var_registry.get_value(node.name)
+            return Texpr0DimNode(var_registry.get_id(node.name))
         elif node.name in const_registry.variable_table.keys():
-            return const_registry.get_value(node.name)
+            return Texpr0CstNode(MpqScalar(int(const_registry.get_value(node.name))))
         else:
             raise Exception(
                 f'Variable {node.name} not found in var or const registry!')
@@ -67,47 +77,76 @@ def compute_expression_object(node: Node, var_registry: VariableRegistry, const_
     # handle if node type is BinaryOperation
     if node.node_type == 'BinaryOperation':
         left = compute_expression_object(
-            node.leftExpression, var_registry, const_registry)
+            node.leftExpression, var_registry, const_registry, abstract_state, manager)
         right = compute_expression_object(
-            node.rightExpression, var_registry, const_registry)
+            node.rightExpression, var_registry, const_registry, abstract_state, manager)
 
         return compute_binary_operation(left,
                                         right,
-                                        node.operator)
+                                        node.operator,
+                                        abstract_state, manager)
 
     raise Exception(
         f'Handlers for node type {node.node_type} not implemented yet!')
 
 
-def compute_binary_operation(left: int, right: int, operator: str) -> int:
+def compute_binary_operation(left: int, right: int, operator: str, abstract_state: jpype.JClass, manager: jpype.JClass) -> int:
     '''
     Compute a binary operation equation based on the lhs, rhs and operator
     '''
+    Texpr0BinNode = jpype.JClass("apron.Texpr0BinNode")
 
-    if operator == '+':
-        return left + right
-    elif operator == '-':
-        return left - right
-    elif operator == '*':
-        return left * right
-    elif operator == '/':
-        return left / right
-    elif operator == '%':
-        return left % right
-    elif operator == '==':
-        return left == right
-    elif operator == '!=':
-        return left == right
-    elif operator == '<':
-        return left < right
-    elif operator == '<=':
-        return left <= right
-    elif operator == '>':
-        return left > right
-    elif operator == '>=':
-        return left >= right
+    # Define a mapping from operators to Texpr0BinNode constants
+    arithmetic_op_mapping = {
+        '+': Texpr0BinNode.OP_ADD,
+        '-': Texpr0BinNode.OP_SUB,
+        '*': Texpr0BinNode.OP_MUL,
+        '/': Texpr0BinNode.OP_DIV
+    }
+
+    logical_op_mapping = {
+        '==': None,
+        '!=': None,
+        '<': None,
+        '<=': None,
+        '>': None,
+        '>=': None
+    }
+
+    if operator in arithmetic_op_mapping:
+        return Texpr0BinNode(arithmetic_op_mapping[operator], left, right)
+    elif operator in logical_op_mapping:
+        Texpr0Intern = jpype.JClass("apron.Texpr0Intern")
+
+        # Evaluate expressions to get their intervals within the abstract state
+        interval_left = abstract_state.getBound(manager, Texpr0Intern(left))
+        interval_right = abstract_state.getBound(manager, Texpr0Intern(right))
+
+        # Perform comparison based on the operator
+        comparison_result = compare_intervals(
+            interval_left, interval_right, operator)
+
+        return comparison_result
     else:
-        raise Exception(f'Operator {operator} not implemented yet!')
+        raise ValueError(f"Unsupported operator: {operator}")
+
+
+def compare_intervals(interval_left, interval_right, operator):
+    # Perform comparison using Interval class methods
+    if operator == "==":
+        return interval_left.isEqual(interval_right)
+    elif operator == "<":
+        return interval_left.sup().cmp(interval_right.inf()) < 0
+    elif operator == ">":
+        return interval_left.inf().cmp(interval_right.sup()) > 0
+    elif operator == "<=":
+        return interval_left.sup().cmp(interval_right.inf()) <= 0
+    elif operator == ">=":
+        return interval_left.inf().cmp(interval_right.sup()) >= 0
+    elif operator == "!=":
+        return not interval_left.isEqual(interval_right)
+    else:
+        raise ValueError(f"Unsupported operator: {operator}")
 
 
 def set_var_registry_state(state: Tuple[Any], variable_reg: VariableRegistry) -> VariableRegistry:

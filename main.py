@@ -16,8 +16,10 @@ contract c {
         int a = 1;
         int b = 1;
         
-        for (int i = 0; i < 3; i++) {
-            a = a + b;
+        if (a > 10) {
+            a = 10;
+        } else {
+            a = 20;
         }
 
         int d = a + b;
