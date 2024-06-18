@@ -159,3 +159,31 @@ def set_var_registry_state(state: Tuple[Any], variable_reg: VariableRegistry) ->
         variable_reg.set_value(variable, value)
 
     return variable_reg
+
+
+def generate_undef_state(variable_reg: VariableRegistry, manager: jpype.JClass) -> Tuple[Any]:
+    '''
+    Generate the initial abstract state tuple based on
+    the variables present in the variable registry
+    '''
+
+    # Import APRON Classes
+    Abstract0 = jpype.JClass("apron.Abstract0")
+    Interval = jpype.JClass("apron.Interval")
+
+    # obtain the variable names and init the state tuple
+    variables = variable_reg.variable_table.keys()
+    int_variables_count = len(variables)
+    real_variables_count = 0
+
+    # init the Inverval for every variable
+    # box_state = [Interval() for _ in variables]
+    box_state = Interval[int_variables_count]
+    for i in range(int_variables_count):
+        box_state[i] = Interval()
+
+    # generate the level 0 abstract state
+    state = Abstract0(manager, int_variables_count,
+                      real_variables_count, box_state)
+
+    return state

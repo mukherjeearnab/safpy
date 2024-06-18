@@ -23,7 +23,7 @@ def get_variables(node: Node) -> Set[str]:
     return node_module.get_variables(node)
 
 
-def generate_exit_sets(node: Node, entry_set: Any,
+def generate_exit_sets(node: Node, entry_set: Any, exit_sets: dict,
                        var_registry: VariableRegistry, const_registry: VariableRegistry,
                        manager: jpype.JClass) -> Dict[str, Set[Tuple[Any]]]:
     '''
@@ -36,4 +36,4 @@ def generate_exit_sets(node: Node, entry_set: Any,
         Abstract0 = jpype.JClass("apron.Abstract0")
         return {'*': Abstract0(manager, entry_set)}
 
-    return node_module.generate_exit_sets(node, entry_set, var_registry, const_registry, manager)
+    return node_module.generate_exit_sets(node, entry_set, exit_sets, var_registry, const_registry, manager)

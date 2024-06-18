@@ -166,6 +166,9 @@ class PointState(object):
             # then the fixed point has not been reached
             # in this case we use the apron method isEqual to check the similarity
             if not current_state.isEqual(self.manager, prev_state):
+                Arrays = jpype.JClass("java.util.Arrays")
+                print("PrebNONE", node_id,
+                      Arrays.toString(current_state.toBox(self.manager)), Arrays.toString(prev_state.toBox(self.manager)))
                 return False
 
         # if everything passes, return True

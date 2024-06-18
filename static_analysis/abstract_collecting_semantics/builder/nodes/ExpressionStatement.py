@@ -39,7 +39,7 @@ def get_variables(node: ExpressionStatement) -> Set[str]:
     # this will really get complicated with more functionality being added
 
 
-def generate_exit_sets(node: ExpressionStatement, entry_set: Set[Tuple[Any]],
+def generate_exit_sets(node: ExpressionStatement, entry_set: Set[Tuple[Any]], exit_sets: dict,
                        var_registry: VariableRegistry, const_registry: VariableRegistry,
                        manager: jpype.JClass) -> Dict[str, Set[Tuple[Any]]]:
     '''

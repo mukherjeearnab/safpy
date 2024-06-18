@@ -16,10 +16,8 @@ contract c {
         int a = 1;
         int b = 1;
         
-        if (a > 10) {
-            a = 10;
-        } else {
-            a = 20;
+        while (a < 3) {
+            a = a + b;
         }
 
         int d = a + b;

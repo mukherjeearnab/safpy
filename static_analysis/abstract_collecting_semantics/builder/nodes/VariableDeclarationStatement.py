@@ -24,7 +24,7 @@ def get_variables(node: VariableDeclarationStatement) -> Set[str]:
     return left_symbols
 
 
-def generate_exit_sets(node: VariableDeclarationStatement, entry_set: Set[Tuple[Any]],
+def generate_exit_sets(node: VariableDeclarationStatement, entry_set: Set[Tuple[Any]], exit_sets: dict,
                        var_registry: VariableRegistry, const_registry: VariableRegistry,
                        manager: jpype.JClass) -> Dict[str, Set[Tuple[Any]]]:
     '''

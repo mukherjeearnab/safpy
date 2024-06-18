@@ -6,6 +6,7 @@ from jpype import startJVM, shutdownJVM, addClassPath, JClass, JInt
 from control_flow_graph import ControlFlowGraph
 from static_analysis.abstract_collecting_semantics.objects import VariableRegistry, PointState
 import static_analysis.abstract_collecting_semantics.builder as builder
+from time import sleep
 
 
 class AbstractCollectingSemanticsAnalysis(object):
@@ -136,9 +137,13 @@ class AbstractCollectingSemanticsAnalysis(object):
             entry_set = self.point_state.get_node_state_set(
                 node_id, self.point_state.iteration)
 
+            # 1.1 Obtain the exit set of previous iteration
+            exit_sets = self.point_state.get_node_state_set(
+                node_id, self.point_state.iteration-1, False)
+
             # 2. process the node semantics and generate the exit state sets for it's next nodes
             exit_sets = builder.generate_exit_sets(
-                node, entry_set, self.variable_registry, self.constant_registry, self.manager)
+                node, entry_set, exit_sets, self.variable_registry, self.constant_registry, self.manager)
 
             # 3. udpate the exit state set for the node
             # (EDGE CASE: for ending node, we will use the next node as '*')
@@ -175,6 +180,8 @@ class AbstractCollectingSemanticsAnalysis(object):
 
             # print(self.point_state.iteration, 'VariableDeclarationStatement_1', self.point_state.get_node_state_set(
             #     'VariableDeclarationStatement_1', self.point_state.iteration, True))
+
+            sleep(1)
 
             if self.point_state.is_fixed_point_reached():
                 break

@@ -6,7 +6,7 @@ from copy import deepcopy
 import jpype
 from static_analysis.abstract_collecting_semantics.objects import VariableRegistry
 from control_flow_graph.node_processor.nodes import IfStatement
-from static_analysis.abstract_collecting_semantics.builder.common import compute_expression_object, set_var_registry_state
+from static_analysis.abstract_collecting_semantics.builder.common import compute_expression_object, generate_undef_state
 
 
 def get_variables(node: IfStatement) -> Set[str]:
@@ -20,7 +20,7 @@ def get_variables(node: IfStatement) -> Set[str]:
     return left_symbols
 
 
-def generate_exit_sets(node: IfStatement, entry_set: Set[Tuple[Any]],
+def generate_exit_sets(node: IfStatement, entry_set: Set[Tuple[Any]], exit_sets: dict,
                        var_registry: VariableRegistry, const_registry: VariableRegistry,
                        manager: jpype.JClass) -> Dict[str, Set[Tuple[Any]]]:
     '''
@@ -39,6 +39,9 @@ def generate_exit_sets(node: IfStatement, entry_set: Set[Tuple[Any]],
     # init exit_set ('*') as empty set
     exit_dict = {true_branch: Abstract0(manager, entry_set),
                  false_branch: Abstract0(manager, entry_set)}
+    if exit_sets is not None:
+        exit_dict = {true_branch: exit_sets[true_branch],
+                     false_branch: exit_sets[false_branch]}
 
     #   1. based on the state values, compute the expression
     expr_value = compute_expression_object(
