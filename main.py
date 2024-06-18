@@ -2,7 +2,8 @@ import json
 from compiler import SolCompiler
 from control_flow_graph import ControlFlowGraph
 # from static_analysis.dataflow_analysis.avl_expr import AvailableExpressionAnalysis
-from static_analysis.collecting_semantics import CollectingSemanticsAnalysis
+# from static_analysis.collecting_semantics import CollectingSemanticsAnalysis
+from static_analysis.abstract_collecting_semantics import AbstractCollectingSemanticsAnalysis
 
 source = '''
 pragma solidity ^0.4.0;
@@ -46,7 +47,7 @@ cfg.build_cfg()
 cfg.generate_dot()
 cfg.generate_dot_bottom_up()
 
-csem = CollectingSemanticsAnalysis(
-    cfg, 'FunctionEntry_0', 'FunctionExit_0')
+csem = AbstractCollectingSemanticsAnalysis(
+    cfg, 'FunctionEntry_0', 'FunctionExit_0', '/home/arnab/.apron_bin/apron.jar')
 
 csem.compute()
