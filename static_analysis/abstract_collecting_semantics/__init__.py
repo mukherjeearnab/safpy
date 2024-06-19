@@ -1,8 +1,7 @@
 '''
 The Collecting Semantics Analysis in the Interval Abstract Domain
 '''
-import jpype
-from jpype import startJVM, shutdownJVM, addClassPath, JClass, JInt
+from java_wrapper import apron, java
 from control_flow_graph import ControlFlowGraph
 from static_analysis.abstract_collecting_semantics.objects import VariableRegistry, PointState
 import static_analysis.abstract_collecting_semantics.builder as builder
@@ -18,12 +17,9 @@ class AbstractCollectingSemanticsAnalysis(object):
         '''
         Constructor
         '''
-        # init jpype jvm
-        self.__init_jpype(_java_class_path, _java_lib_path)
 
         # Import APRON Classes
-        Box = jpype.JClass("apron.Box")
-        self.manager = Box()
+        self.manager = apron.Box()
 
         self.cfg = cfg
         self.starting_node = starting_node
@@ -33,21 +29,6 @@ class AbstractCollectingSemanticsAnalysis(object):
         self.constant_registry = VariableRegistry()
         self.point_state = PointState(
             self.variable_registry, self.starting_node, self.manager)
-
-    def __init_jpype(self, class_path: str, library_path: str):
-        '''
-        Initialize the JPype JVM with the Classpath and Java Library paths
-        '''
-
-        # Initialize the JVM and add the Apron library to the classpath
-        # addClassPath(class_path)
-
-        lib_path = jpype.getDefaultJVMPath() if library_path is None else library_path
-        print(lib_path)
-        startJVM(classpath=['/home/arnab/.apron_bin/apron.jar',
-                 '/home/arnab/.apron_bin/gmp.jar'])
-        # f"-Djava.library.path=/usr/local/lib;/usr/lib;/home/arnab/.apron_bin")  # ,
-        #  f"-Djava.class.path={class_path}:/home/arnab/.apron_bin/gmp.jar")
 
     def compute(self) -> None:
         '''
@@ -59,15 +40,16 @@ class AbstractCollectingSemanticsAnalysis(object):
         self.__compute_variables()
         print(self.variable_registry.variable_table.keys())
 
-        Arrays = jpype.JClass("java.util.Arrays")
-
+        # compute the abstract collecting semantics in the Interval Abstract Domain
         self.__compute_abstract_collecting_semantics()
+
+        # print the output for all the iterations
         for node in self.point_state.node_states.keys():
-            for i in range(self.point_state.iteration, self.point_state.iteration+1):
-                print('ENTRY', i, node, Arrays.toString(self.point_state.get_node_state_set(
+            for i in range(1, self.point_state.iteration+1):
+                print('ENTRY', i, node, java.Arrays.toString(self.point_state.get_node_state_set(
                     node, i, True).toBox(self.manager)))
-                print('EXIT', i, node, self.point_state.get_node_state_set(
-                    node, i, False))
+                # print('EXIT', i, node, self.point_state.get_node_state_set(
+                #     node, i, False))
 
     def __compute_variables(self) -> None:
         '''
@@ -151,21 +133,6 @@ class AbstractCollectingSemanticsAnalysis(object):
                 self.point_state.update_node_exit_state(
                     node_id, next_node_id, exit_set)
 
-            '''
-            This should work like,
-            [DONE] first, we obtain the values of the existing variables from exit node of the previous nodes:
-                1. obtain the exit of the previous nodes
-                2. apply the meet operator to these exit states
-                3. set this new one as the entry of the current (update entry state)
-            [DONE] second, compute the expression (if any based on the entry state values)
-            [DONE] third, update the exit state of the current node based on the computed expression
-                1. check if exit node's current value is different from the evaluated expression
-                2. if yes, update the exit state of the current node
-                3. else continue to next nodes
-            '''
-
-            # print("COLlSEM-COMPUT", node_id)
-
             if node_id != self.ending_node:
                 for child_id in node.next_nodes:
                     child_node = cfg.cfg_metadata.get_node(child_id)
@@ -178,10 +145,7 @@ class AbstractCollectingSemanticsAnalysis(object):
             print('Start Iter:', self.point_state.iteration)
             traverse(self.starting_node, visited, self.cfg)
 
-            # print(self.point_state.iteration, 'VariableDeclarationStatement_1', self.point_state.get_node_state_set(
-            #     'VariableDeclarationStatement_1', self.point_state.iteration, True))
-
-            sleep(1)
+            # sleep(1)
 
             if self.point_state.is_fixed_point_reached():
                 break

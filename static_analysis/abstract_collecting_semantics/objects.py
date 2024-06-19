@@ -2,17 +2,7 @@
 Auxiliary Objects Module
 '''
 from typing import Any, Tuple, Union, List, Set, Dict
-from enum import Enum
-import jpype
-
-# MpqScalar = jpype.JClass("apron.MpqScalar")
-# Linterm0 = jpype.JClass("apron.Linterm0")
-# Linexpr0 = jpype.JClass("apron.Linexpr0")
-# Texpr0BinNode = jpype.JClass("apron.Texpr0BinNode")
-# Texpr0CstNode = jpype.JClass("apron.Texpr0CstNode")
-# Texpr0Node = jpype.JClass("apron.Texpr0Node")
-# Texpr0Intern = jpype.JClass("apron.Texpr0Intern")
-# Texpr0DimNode = jpype.JClass("apron.Texpr0DimNode")
+from java_wrapper import apron, java
 
 
 class VariableRegistry(object):
@@ -25,7 +15,7 @@ class VariableRegistry(object):
         self.variable_table = dict()
         self.variable_count = 0
 
-    def register_variable(self, variable: str, value=None) -> int:
+    def register_variable(self, variable: str, value: Union[apron.Interval, apron.MpqScalar] = None) -> dict:
         '''
         Register a variable and return its identifier
         '''
@@ -47,7 +37,7 @@ class VariableRegistry(object):
 
         return self.variable_table[variable]['id'] if variable in self.variable_table else -1
 
-    def get_value(self, variable: str) -> Any:
+    def get_value(self, variable: str) -> Union[apron.Interval, apron.MpqScalar]:
         '''
         Get the value of a variable
         '''
@@ -57,7 +47,7 @@ class VariableRegistry(object):
 
         return self.variable_table[variable]['value']
 
-    def set_value(self, variable: str, value: Any) -> None:
+    def set_value(self, variable: str, value: Union[apron.Interval, apron.MpqScalar]) -> None:
         '''
         Set the value of a variable
         '''
@@ -73,7 +63,7 @@ class PointState(object):
     Class representing the state of variables at a program point
     '''
 
-    def __init__(self, _variable_registry: VariableRegistry, starting_node: str, apron_manager: jpype.JClass):
+    def __init__(self, _variable_registry: VariableRegistry, starting_node: str, apron_manager: apron.Manager):  # type: ignore
         # also reference the variable registry
         self.variable_registry = _variable_registry
         self.starting_node = starting_node
@@ -110,7 +100,7 @@ class PointState(object):
         # in this case, if we don't need to specify a next node, we use the wildcard '*'
         self.node_states[node_id]['exit'][0] = {'*': None}
 
-    def get_node_state_set(self, node_id: str, iteration: int, is_entry=True, next_node='*') -> Union[Set[Tuple[int]], Dict[str, Set[Tuple[int]]]]:
+    def get_node_state_set(self, node_id: str, iteration: int, is_entry=True, next_node='*') -> Union[apron.Abstract0, Dict[str, apron.Abstract0]]:
         '''
         get the entry of a variable's state for a given node
         '''
@@ -166,9 +156,6 @@ class PointState(object):
             # then the fixed point has not been reached
             # in this case we use the apron method isEqual to check the similarity
             if not current_state.isEqual(self.manager, prev_state):
-                Arrays = jpype.JClass("java.util.Arrays")
-                print("PrebNONE", node_id,
-                      Arrays.toString(current_state.toBox(self.manager)), Arrays.toString(prev_state.toBox(self.manager)))
                 return False
 
         # if everything passes, return True
@@ -206,7 +193,7 @@ class PointState(object):
 
         self.node_states[node_id]['entry'][self.iteration] = abs_state
 
-    def update_node_exit_state(self, node_id: str, next_node_id: str, exit_state: Set[jpype.JClass]) -> None:
+    def update_node_exit_state(self, node_id: str, next_node_id: str, exit_state: apron.Abstract0) -> None:
         '''
         Update state for the current iteration
         of a given node at it's exit point.
@@ -236,11 +223,6 @@ class PointState(object):
         Generate the initial abstract state tuple based on
         the variables present in the variable registry
         '''
-
-        # Import APRON Classes
-        Abstract0 = jpype.JClass("apron.Abstract0")
-        Interval = jpype.JClass("apron.Interval")
-
         # obtain the variable names and init the state tuple
         variables = self.variable_registry.variable_table.keys()
         int_variables_count = len(variables)
@@ -248,12 +230,12 @@ class PointState(object):
 
         # init the Inverval for every variable
         # box_state = [Interval() for _ in variables]
-        box_state = Interval[int_variables_count]
+        box_state = apron.Interval[int_variables_count]
         for i in range(int_variables_count):
-            box_state[i] = Interval()
+            box_state[i] = apron.Interval()
 
         # generate the level 0 abstract state
-        state = Abstract0(self.manager, int_variables_count,
-                          real_variables_count, box_state)
+        state = apron.Abstract0(self.manager, int_variables_count,
+                                real_variables_count, box_state)
 
         return state

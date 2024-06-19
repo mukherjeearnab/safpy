@@ -3,10 +3,10 @@ WhileStatement Expression Handlers
 '''
 from typing import Set, Tuple, Any, Dict
 from copy import deepcopy
-import jpype
+from java_wrapper import java, apron
 from static_analysis.abstract_collecting_semantics.objects import VariableRegistry
 from control_flow_graph.node_processor.nodes import ForStatement
-from static_analysis.abstract_collecting_semantics.builder.common import update_state_tuple, compute_expression_object, set_var_registry_state
+from static_analysis.abstract_collecting_semantics.builder.common import compute_expression_object
 
 
 def get_variables(node: ForStatement) -> Set[str]:
@@ -20,9 +20,9 @@ def get_variables(node: ForStatement) -> Set[str]:
     return left_symbols
 
 
-def generate_exit_sets(node: ForStatement, entry_set: Set[Tuple[Any]], exit_sets: dict,
+def generate_exit_sets(node: ForStatement, entry_set: apron.Abstract0, exit_sets: Dict[str, apron.Abstract0],
                        var_registry: VariableRegistry, const_registry: VariableRegistry,
-                       manager: jpype.JClass) -> Dict[str, Set[Tuple[Any]]]:
+                       manager: apron.Manager) -> Dict[str, apron.Abstract0]:
     '''
     Function to compute the exit set(s) from the given entry set and node semantics
     '''
@@ -34,17 +34,12 @@ def generate_exit_sets(node: ForStatement, entry_set: Set[Tuple[Any]], exit_sets
     true_branch = node.body_next
     false_branch = node.join_node
 
-    Abstract0 = jpype.JClass("apron.Abstract0")
-
     # init exit_set ('*') as empty set
-    exit_dict = {true_branch: Abstract0(manager, entry_set),
-                 false_branch: Abstract0(manager, entry_set)}
+    exit_dict = {true_branch: apron.Abstract0(manager, entry_set),
+                 false_branch: apron.Abstract0(manager, entry_set)}
     if exit_sets is not None:
         exit_dict = {true_branch: exit_sets[true_branch],
                      false_branch: exit_sets[false_branch]}
-
-    Arrays = jpype.JClass("java.util.Arrays")
-    print(Arrays.toString(entry_set.toBox(manager)))
 
     #   1. based on the state values, compute the expression
     expr_value = compute_expression_object(
@@ -60,6 +55,6 @@ def generate_exit_sets(node: ForStatement, entry_set: Set[Tuple[Any]], exit_sets
         exit_dict[false_branch] = entry_set
     else:
         raise Exception(
-            f'Invalid expression value {expr_value} for If Statement!')
+            f'Invalid expression value {expr_value} for ForLoop Statement!')
 
     return exit_dict

@@ -3,10 +3,10 @@ ExpressionStatement Expression Handlers
 '''
 from typing import Set, Tuple, Any, Dict
 from copy import deepcopy
-import jpype
+from java_wrapper import java, apron
 from static_analysis.abstract_collecting_semantics.objects import VariableRegistry
 from control_flow_graph.node_processor.nodes import ExpressionStatement
-from static_analysis.abstract_collecting_semantics.builder.common import traverse_expression_object, update_state_tuple, compute_expression_object, set_var_registry_state
+from static_analysis.abstract_collecting_semantics.builder.common import traverse_expression_object, compute_expression_object
 
 
 def get_variables(node: ExpressionStatement) -> Set[str]:
@@ -39,9 +39,9 @@ def get_variables(node: ExpressionStatement) -> Set[str]:
     # this will really get complicated with more functionality being added
 
 
-def generate_exit_sets(node: ExpressionStatement, entry_set: Set[Tuple[Any]], exit_sets: dict,
+def generate_exit_sets(node: ExpressionStatement, entry_set: apron.Abstract0, exit_sets: Dict[str, apron.Abstract0],
                        var_registry: VariableRegistry, const_registry: VariableRegistry,
-                       manager: jpype.JClass) -> Dict[str, Set[Tuple[Any]]]:
+                       manager: apron.Manager) -> Dict[str, apron.Abstract0]:
     '''
     Function to compute the exit set(s) from the given entry set and node semantics
     '''
@@ -50,8 +50,6 @@ def generate_exit_sets(node: ExpressionStatement, entry_set: Set[Tuple[Any]], ex
     expression = node.expression
 
     print(entry_set)
-
-    Texpr0Intern = jpype.JClass("apron.Texpr0Intern")
 
     # init symbol sets
     left_symbol = get_variables(node).pop()
@@ -62,7 +60,7 @@ def generate_exit_sets(node: ExpressionStatement, entry_set: Set[Tuple[Any]], ex
         entry_set, manager)
 
     # Assuming parsed_expression returns a Texpr0Node or similar
-    expr = Texpr0Intern(expr)
+    expr = apron.Texpr0Intern(expr)
 
     #   2. replace the computed variable (lhs) value in this particular state
     variable_index = var_registry.get_id(left_symbol)
