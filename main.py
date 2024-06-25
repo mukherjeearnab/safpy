@@ -15,8 +15,8 @@ contract c {
     function run() {
         int a = 1;
         int b = 1;
-        
-        for (int i = 0; i < 3; i = i + 1) {
+
+        while (a < 3) {
             a = a + b;
         }
 

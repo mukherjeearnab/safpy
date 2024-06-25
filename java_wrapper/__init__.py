@@ -15,6 +15,7 @@ class apron(object):
     Interval = jpype.JClass("apron.Interval")
     Abstract0 = jpype.JClass("apron.Abstract0")
     Box = jpype.JClass("apron.Box")
+    Octagon = jpype.JClass("apron.Octagon")
     ApronException = jpype.JClass("apron.ApronException")
     MpqScalar = jpype.JClass("apron.MpqScalar")
     Linterm0 = jpype.JClass("apron.Linterm0")

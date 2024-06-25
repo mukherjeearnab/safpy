@@ -233,6 +233,7 @@ class PointState(object):
         box_state = apron.Interval[int_variables_count]
         for i in range(int_variables_count):
             box_state[i] = apron.Interval()
+            # box_state[i].setBottom()
 
         # generate the level 0 abstract state
         state = apron.Abstract0(self.manager, int_variables_count,
