@@ -49,12 +49,15 @@ def generate_exit_sets(node: WhileStatement, entry_set: apron.Abstract0, exit_se
     #   2. based on the computed expression,
     # if expr_value is True, add state to true branch
     # else add state to false branch
-    if expr_value == True:
+    if expr_value == 'any':
+        exit_dict[true_branch] = entry_set
+        exit_dict[false_branch] = entry_set
+    elif expr_value == True:
         exit_dict[true_branch] = entry_set
     elif expr_value == False:
         exit_dict[false_branch] = entry_set
     else:
         raise Exception(
-            f'Invalid expression value {expr_value} for If Statement!')
+            f'Invalid expression value {expr_value} for While Statement!')
 
     return exit_dict

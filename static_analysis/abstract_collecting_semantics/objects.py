@@ -179,7 +179,11 @@ class PointState(object):
             prev_state = self.get_node_state_set(
                 prev_node, self.iteration - 1, is_entry=False, next_node=node_id)
             if prev_state is not None:
-                prev_states.append(prev_state)
+                if isinstance(prev_state, dict):
+                    for _, state in prev_state.items():
+                        prev_states.append(state)
+                else:
+                    prev_states.append(prev_state)
 
         # if previous states is empty, then generate a new state
         if len(prev_states) == 0:

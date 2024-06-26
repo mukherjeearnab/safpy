@@ -19,7 +19,7 @@ class AbstractCollectingSemanticsAnalysis(object):
         '''
 
         # Import APRON Classes
-        self.manager = apron.Octagon()
+        self.manager = apron.Box()
 
         self.cfg = cfg
         self.starting_node = starting_node
@@ -47,7 +47,7 @@ class AbstractCollectingSemanticsAnalysis(object):
         for node in self.point_state.node_states.keys():
             for i in range(1, self.point_state.iteration+1):
                 print('ENTRY', i, node, java.Arrays.toString(self.point_state.get_node_state_set(
-                    node, i, True).toTcons(self.manager)))
+                    node, i, True).toBox(self.manager)))
                 # print('EXIT', i, node, self.point_state.get_node_state_set(
                 #     node, i, False))
 
@@ -145,7 +145,7 @@ class AbstractCollectingSemanticsAnalysis(object):
             print('Start Iter:', self.point_state.iteration)
             traverse(self.starting_node, visited, self.cfg)
 
-            # sleep(1)
+            sleep(0.2)
 
             if self.point_state.is_fixed_point_reached():
                 break

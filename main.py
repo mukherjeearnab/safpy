@@ -2,7 +2,7 @@ import json
 from compiler import SolCompiler
 from control_flow_graph import ControlFlowGraph
 # from static_analysis.dataflow_analysis.avl_expr import AvailableExpressionAnalysis
-# from static_analysis.collecting_semantics import CollectingSemanticsAnalysis
+from static_analysis.collecting_semantics import CollectingSemanticsAnalysis
 from static_analysis.abstract_collecting_semantics import AbstractCollectingSemanticsAnalysis
 
 source = '''
@@ -12,15 +12,15 @@ contract c {
     //int a = 10;
     int b = 12;
 
-    function run() {
+    function run(int m) {
+        //int m = 1;
         int a = 1;
-        int b = 1;
 
-        while (a < 3) {
-            a = a + b;
-        }
+        while (a <= m) {
+            a = a + 1;
+        }        
 
-        int d = a + b;
+        //int d = a + b;
     }
 }
 /*
@@ -49,5 +49,10 @@ cfg.generate_dot_bottom_up()
 
 csem = AbstractCollectingSemanticsAnalysis(
     cfg, 'FunctionEntry_0', 'FunctionExit_0', '/home/arnab/.apron_bin/apron.jar')
+
+# csem = CollectingSemanticsAnalysis(
+#     cfg, 'FunctionEntry_0', 'FunctionExit_0')
+
+csem.constant_registry.register_variable('m', 'top')
 
 csem.compute()

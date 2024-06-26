@@ -6,7 +6,7 @@ from copy import deepcopy
 from java_wrapper import java, apron
 from static_analysis.abstract_collecting_semantics.objects import VariableRegistry
 from control_flow_graph.node_processor.nodes import IfStatement
-from static_analysis.abstract_collecting_semantics.builder.common import compute_expression_object, generate_undef_state
+from static_analysis.abstract_collecting_semantics.builder.common import compute_expression_object, generate_bottom_state
 
 
 def get_variables(node: IfStatement) -> Set[str]:
@@ -49,10 +49,15 @@ def generate_exit_sets(node: IfStatement, entry_set: apron.Abstract0, exit_sets:
     #   2. based on the computed expression,
     # if expr_value is True, add state to true branch
     # else add state to false branch
-    if expr_value == True:
+    if expr_value == 'any':
         exit_dict[true_branch] = entry_set
+        exit_dict[false_branch] = entry_set
+    elif expr_value == True:
+        exit_dict[true_branch] = entry_set
+        exit_dict[false_branch] = generate_bottom_state(var_registry, manager)
     elif expr_value == False:
         exit_dict[false_branch] = entry_set
+        exit_dict[true_branch] = generate_bottom_state(var_registry, manager)
     else:
         raise Exception(
             f'Invalid expression value {expr_value} for If Statement!')
