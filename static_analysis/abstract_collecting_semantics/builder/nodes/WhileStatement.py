@@ -37,7 +37,7 @@ def generate_exit_sets(node: WhileStatement, entry_set: apron.Abstract0, exit_se
     # init exit_set ('*') as empty set
     exit_dict = {true_branch: apron.Abstract0(manager, entry_set),
                  false_branch: apron.Abstract0(manager, entry_set)}
-    if exit_sets is not None:
+    if '*' not in exit_sets:
         exit_dict = {true_branch: exit_sets[true_branch],
                      false_branch: exit_sets[false_branch]}
 

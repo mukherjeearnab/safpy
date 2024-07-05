@@ -100,7 +100,26 @@ class PointState(object):
         # in this case, if we don't need to specify a next node, we use the wildcard '*'
         self.node_states[node_id]['exit'][0] = {'*': None}
 
-    def get_node_state_set(self, node_id: str, iteration: int, is_entry=True, next_node='*') -> Union[apron.Abstract0, Dict[str, apron.Abstract0]]:
+    def init_node_states(self) -> None:
+        '''
+        Initialize the node states to default values or the bottom state at the 0th iteration
+        '''
+
+        for node_id in self.node_states:
+            # generate a default state based on the type of node
+            # if the node is the starting node, then it needs to be 0 interval
+            # else for all other nodes it needs to be bottom interval
+            default_state = self.__generate_default_state_tuple() if node_id == self.starting_node \
+                else self.__generate_bottom_state_tuple()
+
+            # initialize the state table for the entry and exit points
+            self.node_states[node_id]['entry'][0] = default_state
+            # in case of exit, we need to have different state sets for each of the next nodes
+            # this is why, we include a dictionary of next_node_id -> state_set
+            # in this case, if we don't need to specify a next node, we use the wildcard '*'
+            self.node_states[node_id]['exit'][0] = {'*': default_state}
+
+    def get_node_state_set(self, node_id: str, iteration: int, is_entry=True, next_node='*', get_all=False) -> Union[apron.Abstract0, Dict[str, apron.Abstract0]]:
         '''
         get the entry of a variable's state for a given node
         '''
@@ -116,6 +135,9 @@ class PointState(object):
 
         # for exit states, we need to also include the next node for which we fetch the exit node
         if not is_entry:
+            if get_all:
+                return self.node_states[node_id][point][iteration]
+            print("CHK-EXIT", self.node_states[node_id][point][iteration])
             if next_node not in self.node_states[node_id][point][iteration]:
                 if '*' in self.node_states[node_id][point][iteration]:
                     return self.node_states[node_id][point][iteration]['*']
@@ -168,26 +190,20 @@ class PointState(object):
         '''
 
         # edge case: node is the starting node
+        # here we do nothing and return
         if node_id == self.starting_node:
-            self.__init_start_node(node_id)
-
-            return
+            prev_nodes = list()
 
         # obtain the exit state ordered-pair sets from the previous nodes
         prev_states = []
         for prev_node in prev_nodes:
             prev_state = self.get_node_state_set(
                 prev_node, self.iteration - 1, is_entry=False, next_node=node_id)
-            if prev_state is not None:
-                if isinstance(prev_state, dict):
-                    for _, state in prev_state.items():
-                        prev_states.append(state)
-                else:
-                    prev_states.append(prev_state)
+            prev_states.append(prev_state)
 
         # if previous states is empty, then generate a new state
         if len(prev_states) == 0:
-            abs_state = self.__generate_state_tuple()
+            abs_state = self.node_states[node_id]['entry'][self.iteration-1]
         else:
             # set the union as the entry set at the current iteration
             abs_state = prev_states.pop()
@@ -196,6 +212,8 @@ class PointState(object):
                 abs_state = abs_state.joinCopy(self.manager, state)
 
         self.node_states[node_id]['entry'][self.iteration] = abs_state
+
+        print("ABSTATE", java.Arrays.toString(abs_state.toBox(self.manager)))
 
     def update_node_exit_state(self, node_id: str, next_node_id: str, exit_state: apron.Abstract0) -> None:
         '''
@@ -211,18 +229,7 @@ class PointState(object):
         # write the exit state set for the next node at the current iteration
         self.node_states[node_id]['exit'][self.iteration][next_node_id] = exit_state
 
-    def __init_start_node(self, node_id: str) -> None:
-        '''
-        Init the state of the Start Node (from where the CFG begins)
-        '''
-
-        # obtain the initial state tuple
-        state_tuple = self.__generate_state_tuple()
-
-        # set the state_tuple_set
-        self.node_states[node_id]['entry'][self.iteration] = state_tuple
-
-    def __generate_state_tuple(self) -> Tuple[Any]:
+    def __generate_default_state_tuple(self) -> Tuple[Any]:
         '''
         Generate the initial abstract state tuple based on
         the variables present in the variable registry
@@ -238,6 +245,29 @@ class PointState(object):
         for i in range(int_variables_count):
             box_state[i] = apron.Interval()
             # box_state[i].setBottom()
+
+        # generate the level 0 abstract state
+        state = apron.Abstract0(self.manager, int_variables_count,
+                                real_variables_count, box_state)
+
+        return state
+
+    def __generate_bottom_state_tuple(self) -> Tuple[Any]:
+        '''
+        Generate the initial abstract state (a bottom state) tuple based on
+        the variables present in the variable registry
+        '''
+        # obtain the variable names and init the state tuple
+        variables = self.variable_registry.variable_table.keys()
+        int_variables_count = len(variables)
+        real_variables_count = 0
+
+        # init the Inverval for every variable
+        # box_state = [Interval() for _ in variables]
+        box_state = apron.Interval[int_variables_count]
+        for i in range(int_variables_count):
+            box_state[i] = apron.Interval()
+            box_state[i].setBottom()
 
         # generate the level 0 abstract state
         state = apron.Abstract0(self.manager, int_variables_count,

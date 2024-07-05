@@ -90,6 +90,8 @@ class AbstractCollectingSemanticsAnalysis(object):
 
         traverse(self.starting_node, visited, self.cfg)
 
+        self.point_state.init_node_states()
+
     def __compute_abstract_collecting_semantics(self) -> None:
         '''
         Compute the Collecting Semantics
@@ -121,7 +123,7 @@ class AbstractCollectingSemanticsAnalysis(object):
 
             # 1.1 Obtain the exit set of previous iteration
             exit_sets = self.point_state.get_node_state_set(
-                node_id, self.point_state.iteration-1, False)
+                node_id, self.point_state.iteration-1, False, '*', True)
 
             # 2. process the node semantics and generate the exit state sets for it's next nodes
             exit_sets = builder.generate_exit_sets(

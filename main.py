@@ -14,9 +14,10 @@ contract c {
 
     function run(int m) {
         //int m = 1;
-        int a = 1;
+        int a = 0;
+        int c = 4;
 
-        while (a <= m) {
+        while (a < m) {
             a = a + 1;
         }        
 
@@ -53,6 +54,6 @@ csem = AbstractCollectingSemanticsAnalysis(
 # csem = CollectingSemanticsAnalysis(
 #     cfg, 'FunctionEntry_0', 'FunctionExit_0')
 
-csem.constant_registry.register_variable('m', 'top')
+csem.constant_registry.register_variable('m', ('1', '3'))
 
 csem.compute()
